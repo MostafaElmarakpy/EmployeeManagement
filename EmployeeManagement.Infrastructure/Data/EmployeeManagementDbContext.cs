@@ -14,22 +14,19 @@ using Microsoft.AspNetCore.Http;
 
 namespace EmployeeManagement.Infrastructure.Data
 {
-    class EmployeeManagementDbContext : IdentityDbContext<ApplicationUser>
+   public  class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        private readonly IHttpContextAccessor accessor;
         public IConfiguration configuration { get; }
 
         public DbSet<Department> Departments { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Task> EmployeeTasks { get; set; }
 
-        public EmployeeManagementDbContext(DbContextOptions<EmployeeManagementDbContext> options
-            , IConfiguration configuration
-            , IHttpContextAccessor accessor)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
+            , IConfiguration configuration)
             : base(options)
         {
             this.configuration = configuration;
-            this.accessor = accessor;
         }
 
 
@@ -56,32 +53,12 @@ namespace EmployeeManagement.Infrastructure.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
 
-            modelBuilder.Entity<Employee>()
-                .HasMany(e => e.AssignedTasks)
-                .WithOne(t => t.AssignedToEmployee)
-                .HasForeignKey(t => t.AssignedToEmployeeId)
-                .OnDelete(DeleteBehavior.NoAction);
+
         }
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
-            CancellationToken cancellationToken = new CancellationToken())
-        {
-            DateTime dateNow = DateTime.Now;
-            string userId = accessor!.HttpContext == null
-                ? string.Empty
-                : accessor!.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 
-            var entries = ChangeTracker
-                .Entries()
-                .Where(e => e.Entity is BaseEntity && (
-                           e.State == EntityState.Added
-                        || e.State == EntityState.Modified
-                        || e.State == EntityState.Deleted)
-            );
 
-            
-
-            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        }
+      
+        
     }
 }
 
