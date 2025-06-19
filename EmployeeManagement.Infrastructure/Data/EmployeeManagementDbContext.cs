@@ -37,6 +37,11 @@ namespace EmployeeManagement.Infrastructure.Data
                 .HasForeignKey(e => e.ManagerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Employee>()
+                 .Property(e => e.Salary)
+                 .HasColumnType("decimal(18,2)");
+
+
             // Department-Manager relationship (One-to-One)
             modelBuilder.Entity<Department>()
                 .HasOne(d => d.Manager)
@@ -58,7 +63,7 @@ namespace EmployeeManagement.Infrastructure.Data
                 .WithMany(e => e.EmployeeTasks)
                 .HasForeignKey(te => te.EmployeeId);
 
-            base.OnModelCreating(modelBuilder);
+            
 
         }
 
