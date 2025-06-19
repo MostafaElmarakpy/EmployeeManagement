@@ -6,11 +6,15 @@ using System;
 using EmployeeManagement.Infrastructure.Data;
 using EmployeeManagement.Application.Interfaces;
 using EmployeeManagement.Infrastructure.Repositories;
+using EmployeeManagement.Application.Services.Implementation;
+using EmployeeManagement.Application.Services.Interfaces;
+using EmployeeManagement.Domain.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddAuthorization();
 
 // Configure the main database connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -19,13 +23,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 
 
 // Add Identity services
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddAuthorization();
 
-
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
