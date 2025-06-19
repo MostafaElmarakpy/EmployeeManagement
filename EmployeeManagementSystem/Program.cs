@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 
 using EmployeeManagement.Infrastructure.Data;
+using EmployeeManagement.Application.Interfaces;
+using EmployeeManagement.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +25,16 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
+
+
 
 var app = builder.Build();
 
