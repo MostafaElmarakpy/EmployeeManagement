@@ -1,5 +1,6 @@
 ﻿using EmployeeManagement.Application.Interfaces;
 using EmployeeManagement.Application.Services.Interfaces;
+using EmployeeManagement.Application.ViewModels;
 using EmployeeManagement.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -24,28 +25,63 @@ namespace EmployeeManagement.Application.Services.Implementation
             return await _unitOfWork.Employees.GetActiveEmployeesAsync();
         }
 
-        public async Task<Employee> GetEmployeeByIdAsync(int id)
+        public async Task<EmployeeViewModel?> GetEmployeeByIdAsync(int id)
         {
-            return await _unitOfWork.Employees.GetEmployeeWithDepartmentAsync(id);
+            var employee = await _unitOfWork.Employees.GetByIdAsync(id);
+            if (employee == null || !employee.IsActive)
+            {
+                return null; // Employee not found or inactive
+            }
+            return new EmployeeViewModel
+            {
+                Id = employee.Id,
+                FirstName = employee.FirstName,
+                LastName = employee.LastName,
+                Salary = employee.Salary,
+                DepartmentId = employee.DepartmentId,
+                ManagerId = employee.ManagerId,
+                ImagePath = employee.ImagePath,
+            };
         }
 
-        public async Task<Employee> CreateEmployeeAsync(Employee employee)
+        public async Task<Employee> CreateEmployeeAsync(EmployeeViewModel employeeViewModel)
         {
-            employee.CreatedAt = DateTime.UtcNow;
-            employee.IsActive = true;
+            var employee = new Employee
+            {
+                FirstName = employeeViewModel.FirstName,
+                LastName = employeeViewModel.LastName,
+                Salary = employeeViewModel.Salary,
+                DepartmentId = employeeViewModel.DepartmentId,
+                ManagerId = employeeViewModel.ManagerId,
+                ImagePath = employeeViewModel.ImagePath,
+                CreatedAt = DateTime.UtcNow,
+                UpdateDate = DateTime.UtcNow,
+                IsActive = true
+            };
 
             await _unitOfWork.Employees.AddAsync(employee);
             await _unitOfWork.SaveChangesAsync();
-
             return employee;
         }
 
-        public async Task UpdateEmployeeAsync(Employee employee)
+        public async Task UpdateEmployeeAsync(EmployeeViewModel employeeViewModel)
         {
-            employee.UpdateDate = DateTime.UtcNow;
-            _unitOfWork.Employees.Update(employee);
-            await _unitOfWork.SaveChangesAsync();
+            var employee = await _unitOfWork.Employees.GetByIdAsync(employeeViewModel.Id);
+            if (employee != null)
+            {
+                employee.FirstName = employeeViewModel.FirstName;
+                employee.LastName = employeeViewModel.LastName;
+                employee.Salary = employeeViewModel.Salary;
+                employee.DepartmentId = employeeViewModel.DepartmentId;
+                employee.ManagerId = employeeViewModel.ManagerId;
+                employee.ImagePath = employeeViewModel.ImagePath;
+                employee.UpdateDate = DateTime.UtcNow;
+
+                _unitOfWork.Employees.Update(employee);
+                await _unitOfWork.SaveChangesAsync();
+            }
         }
+
 
         public async Task DeleteEmployeeAsync(int id)
         {
@@ -75,5 +111,12 @@ namespace EmployeeManagement.Application.Services.Implementation
                 await _unitOfWork.SaveChangesAsync();
             }
         }
+
+        Task<EmployeeViewModel?> IEmployeeService.GetEmployeeByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+
     }
 }
