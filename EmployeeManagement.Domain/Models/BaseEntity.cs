@@ -13,7 +13,7 @@ namespace EmployeeManagement.Domain.Models
         public DateTime? UpdateDate { get; set; }      
         public DateTime? DeleteDate { get; set; }   
 
-        public bool? IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = true;
 
     }
 }

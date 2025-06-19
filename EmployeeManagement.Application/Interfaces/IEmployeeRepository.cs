@@ -10,19 +10,11 @@ namespace EmployeeManagement.Application.Interfaces
 {
     public interface IEmployeeRepository : IGenericRepository<Employee>
     {
-        Task<IEnumerable<Employee>> GetAllEmployeesAsync();
-        Task<Employee> GetEmployeeByIdAsync(int id);
-        Task<Employee> GetEmployeeByUserIdAsync(string userId);
-        Task<Employee> GetManagerEmployeeByUserIdAsync(string userId);
-        Task<IEnumerable<Employee>> GetEmployeesByManagerIdAsync(int managerId);
-
-        Task<Employee> CreateEmployeeAsync(Employee employee, IFormFile imageFile);
-        Task<Employee> UpdateEmployeeAsync(Employee employee, IFormFile imageFile);
-        Task<bool> DeleteEmployeeAsync(int id);
-        Task<bool> EmployeeIsManagerAsync(int id);
-        Task<bool> EmployeeExistsAsync(int id);
-
-
+        Task<IEnumerable<Employee>> GetEmployeesByDepartmentAsync(int departmentId);
+        Task<Employee> GetEmployeeWithDepartmentAsync(int id);
+        Task<IEnumerable<Employee>> GetEmployeesWithManagerAsync();
+        Task<IEnumerable<Employee>> GetSubordinatesAsync(int managerId);
+        Task<IEnumerable<Employee>> GetActiveEmployeesAsync();
 
     }
 }
