@@ -1,32 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-
+﻿using EmployeeManagement.Domain.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using EmployeeManagement.Domain.Models;
-using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace EmployeeManagement.Infrastructure.Data
 {
-   public  class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public IConfiguration configuration { get; }
-
         public DbSet<Department> Departments { get; set; }
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<Task> EmployeeTasks { get; set; }
+        public DbSet<TaskItem> Tasks { get; set; }
+        public DbSet<EmployeeTask> EmployeeTasks { get; set; }
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
-            , IConfiguration configuration)
-            : base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-            this.configuration = configuration;
         }
 
 
@@ -34,31 +21,50 @@ namespace EmployeeManagement.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-            // Configure Department-Employee relationship cannt delete Department if it has Employees
-
-            modelBuilder.Entity<Department>()
-                .HasMany(d => d.Employees)
-                .WithOne(e => e.Department)
+            // Employee-Department relationship (Many-to-One)
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.Department)
+                .WithMany(d => d.Employees)
                 .HasForeignKey(e => e.DepartmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-
-            // Configure self-referencing relationship for Employee (Manager-Managed Employees)
+            // Employee-Manager self-referencing relationship
             modelBuilder.Entity<Employee>()
                 .HasOne(e => e.Manager)
-                .WithMany(e => e.ManagedEmployees)
+                .WithMany(m => m.ManagedEmployees)
                 .HasForeignKey(e => e.ManagerId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Restrict);
 
+            // Department-Manager relationship (One-to-One)
+            modelBuilder.Entity<Department>()
+                .HasOne(d => d.Manager)
+                .WithOne()
+                .HasForeignKey<Department>(d => d.ManagerId)
+                .OnDelete(DeleteBehavior.SetNull);
 
+            // Task-Employee Many-to-Many relationship
+            modelBuilder.Entity<EmployeeTask>()
+                .HasKey(te => new { te.TaskId, te.EmployeeId });
+
+            modelBuilder.Entity<EmployeeTask>()
+                .HasOne(te => te.Task)
+                .WithMany(t => t.EmployeeTasks)
+                .HasForeignKey(te => te.TaskId);
+
+            modelBuilder.Entity<EmployeeTask>()
+                .HasOne(te => te.Employee)
+                .WithMany(e => e.EmployeeTasks)
+                .HasForeignKey(te => te.EmployeeId);
+
+            base.OnModelCreating(modelBuilder);
 
         }
 
 
-      
-        
+
+
     }
 }
 

@@ -14,6 +14,8 @@ builder.Services.AddControllersWithViews();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
+
+
 // Add Identity services
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -24,6 +26,37 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+#region Database Migration and Seeding
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+    var logger = loggerFactory.CreateLogger<Program>();
+
+    try
+    {
+        // Migrate the main database
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        logger.LogInformation("Starting database migration");
+        await context.Database.MigrateAsync();
+
+        logger.LogInformation("Identity database migrated successfully");
+        //// Seed initial users
+        //var userManager = services.GetRequiredService<UserManager<AppUser>>();
+        //await AppIdentityDbContextSeed.SeedUserAsync(userManager);
+
+        logger.LogInformation("Database migrated successfully");
+    }
+    catch (Exception ex)
+    {
+        var loggers = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during database migration");
+    }
+}
+
+#endregion
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

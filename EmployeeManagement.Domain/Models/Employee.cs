@@ -11,7 +11,7 @@ namespace EmployeeManagement.Domain.Models
     public class Employee : BaseEntity
     {
 
-        public int Id { get; set; }
+       
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public decimal Salary { get; set; }
@@ -19,7 +19,6 @@ namespace EmployeeManagement.Domain.Models
 
         public string? UserId { get; set; }
         public virtual ApplicationUser User { get; set; }
-
 
         // Department relationship
         public int DepartmentId { get; set; }
@@ -31,7 +30,7 @@ namespace EmployeeManagement.Domain.Models
         public virtual ICollection<Employee> ManagedEmployees { get; set; } = new List<Employee>();
 
         // Tasks assigned to this employee
-        public virtual ICollection<Task> AssignedTasks { get; set; } = new List<Task>();
+        public virtual ICollection<EmployeeTask> EmployeeTasks { get; set; } = new List<EmployeeTask>();
 
         [NotMapped]
         public string FullName => $"{FirstName} {LastName}";
