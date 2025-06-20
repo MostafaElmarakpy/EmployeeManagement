@@ -39,6 +39,7 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddAutoMapper(typeof(EmployeeManagement.Application.AutoMapper.MappingProfile));
 
+builder.Services.AddScoped<ContextSeed>();
 
 
 
@@ -61,6 +62,12 @@ using (var scope = app.Services.CreateScope())
         await context.Database.MigrateAsync();
 
         logger.LogInformation("Identity database migrated successfully");
+        // Seed initial data
+        var DataSeed = services.GetRequiredService<ContextSeed>();
+        await DataSeed.InitializeAsync();
+
+        logger.LogInformation("Database migration completed successfully");
+
         //// Seed initial users
         //var userManager = services.GetRequiredService<UserManager<AppUser>>();
         //await AppIdentityDbContextSeed.SeedUserAsync(userManager);
