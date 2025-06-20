@@ -17,8 +17,7 @@
         <form asp-action="Index" method="get" class="row g-3">
             <div class="col-md-6">
                 <div class="input-group">
-                    <input type="text" name="searchString" class="form-control" placeholder="Search by name or department..." />
-                    <button type="submit" class="btn btn-outline-secondary">Search</button>
+                   
                 </div>
             </div>
         </form>
@@ -33,7 +32,6 @@
                     <th>Full Name</th>
                     <th>Salary</th>
                     <th>Department</th>
-                    <th>Manager</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -56,9 +54,10 @@
                         <td>@Html.DisplayFor(modelItem => item.FullName)</td>
                         <td>@Html.DisplayFor(modelItem => item.Salary)</td>
                         <td>@item.DepartmentName</td>
-                        <td>@(string.IsNullOrEmpty(item.ManagerName) ? "-" : item.ManagerName)</td>
+                        @* <td>@(string.IsNullOrEmpty(item.ManagerName) ? "-" : item.ManagerName)</td> *@
                         <td>
-                            @*   <a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="@item.Id">Edit</a>
+
+                            @*<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="@item.Id">Edit</a>
                             <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="@item.Id">Delete</a>
  *@
                             <a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="@item.Id">Edit</a>
