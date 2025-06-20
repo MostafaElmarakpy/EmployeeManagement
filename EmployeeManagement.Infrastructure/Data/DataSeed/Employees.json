@@ -1,0 +1,92 @@
+﻿[
+  {
+    "firstName": "John",
+    "lastName": "Smith",
+    "salary": 95000.00,
+    "imagePath": null,
+    "departmentId": 1,
+    "managerId": null,
+    "isActive": true
+  },
+  {
+    "firstName": "Sarah",
+    "lastName": "Johnson",
+    "salary": 82500.00,
+    "imagePath": null,
+    "departmentId": 2,
+    "managerId": 1,
+    "isActive": true
+  },
+  {
+    "firstName": "Michael",
+    "lastName": "Williams",
+    "salary": 78000.00,
+    "imagePath": null,
+    "departmentId": 3,
+    "managerId": 1,
+    "isActive": true
+  },
+  {
+    "firstName": "Emily",
+    "lastName": "Brown",
+    "salary": 71000.00,
+    "imagePath": null,
+    "departmentId": 2,
+    "managerId": 2,
+    "isActive": true
+  },
+  {
+    "firstName": "David",
+    "lastName": "Anderson",
+    "salary": 90000.00,
+    "imagePath": null,
+    "departmentId": 1,
+    "managerId": 1,
+    "isActive": true
+  },
+  {
+    "firstName": "Jessica",
+    "lastName": "Martinez",
+    "salary": 65000.00,
+    "imagePath": null,
+    "departmentId": 3,
+    "managerId": 3,
+    "isActive": true
+  },
+  {
+    "firstName": "Robert",
+    "lastName": "Taylor",
+    "salary": 78500.00,
+    "imagePath": null,
+    "departmentId": 3,
+    "managerId": 2,
+    "isActive": true
+  },
+  {
+    "firstName": "Lisa",
+    "lastName": "Thomas",
+    "salary": 69500.00,
+    "imagePath": null,
+    "departmentId": 2,
+    "managerId": 2,
+    "isActive": true
+  },
+  {
+    "firstName": "James",
+    "lastName": "Wilson",
+    "salary": 85000.00,
+    "imagePath": null,
+    "departmentId": 1,
+    "managerId": 1,
+    "isActive": true
+  },
+  {
+    "firstName": "Jennifer",
+    "lastName": "Garcia",
+    "salary": 72500.00,
+    "imagePath": null,
+    "departmentId": 2,
+    "managerId": 2,
+    "isActive": true
+  }
+]

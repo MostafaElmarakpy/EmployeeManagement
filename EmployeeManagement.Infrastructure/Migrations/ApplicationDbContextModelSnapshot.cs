@@ -139,7 +139,7 @@ namespace EmployeeManagement.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[ManagerId] IS NOT NULL");
 
-                    b.ToTable("Departments");
+                    b.ToTable("Departments", (string)null);
                 });
 
             modelBuilder.Entity("EmployeeManagement.Domain.Models.Employee", b =>
@@ -193,7 +193,7 @@ namespace EmployeeManagement.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Employees");
+                    b.ToTable("Employees", (string)null);
                 });
 
             modelBuilder.Entity("EmployeeManagement.Domain.Models.EmployeeTask", b =>
@@ -211,7 +211,7 @@ namespace EmployeeManagement.Infrastructure.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("EmployeeTasks");
+                    b.ToTable("EmployeeTasks", (string)null);
                 });
 
             modelBuilder.Entity("EmployeeManagement.Domain.Models.TaskItem", b =>
@@ -253,7 +253,7 @@ namespace EmployeeManagement.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("Tasks", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

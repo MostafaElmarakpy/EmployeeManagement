@@ -10,8 +10,6 @@ namespace EmployeeManagement.Domain.Models
 {
     public class Employee : BaseEntity
     {
-
-       
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public decimal Salary { get; set; }
@@ -32,13 +30,13 @@ namespace EmployeeManagement.Domain.Models
         // Tasks assigned to this employee
         public virtual ICollection<EmployeeTask> EmployeeTasks { get; set; } = new List<EmployeeTask>();
 
+
+
         [NotMapped]
         public string FullName => $"{FirstName} {LastName}";
 
         [NotMapped]
         public IFormFile ImageFile { get; set; }
-
-
 
     }
 }

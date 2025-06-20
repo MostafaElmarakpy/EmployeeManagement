@@ -74,7 +74,8 @@ namespace EmployeeManagement.Controllers
                             fullName = saved.FullName,
                             salary = saved.Salary.ToString("0.##"),
                             imagePath = saved.ImagePath,
-                            departmentName = saved.Department,
+
+                            departmentName = saved.DepartmentName,
                             //managerName = string.IsNullOrEmpty(saved.ManagerName) ? "-" : saved.ManagerName
                         }
                     });

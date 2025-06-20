@@ -1,0 +1,22 @@
+﻿[
+  {
+    "Name": "HR",
+    "Description": "Human Resources department responsible for employee management and recruitment.",
+    "isActive": true
+  },
+  {
+    "Name": "IT",
+    "Description": "Information Technology department managing infrastructure and software development.",
+    "isActive": true
+  },
+  {
+    "Name": "Finance",
+    "Description": "Finance department managing budgeting, accounting, and financial reporting.",
+    "isActive": true
+  },
+  {
+    "Name": "Marketing",
+    "Description": "Marketing department responsible for advertising, customer engagement, and branding.",
+    "isActive": true
+  }
+]

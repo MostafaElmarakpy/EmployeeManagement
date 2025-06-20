@@ -27,7 +27,6 @@ namespace EmployeeManagement.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (not shown here for brevity)
                 TempData["ErrorMessage"] = "Unable to load departments. Please try again.";
                 return View(new List<DepartmentViewModel>());
             }
@@ -55,7 +54,7 @@ namespace EmployeeManagement.Controllers
         {
             var model = await _departmentService.GetDepartmentByIdAsync(id);
             if (model == null) return NotFound();
-            return PartialView("_Edit", model);
+            return PartialView("Edit", model);
         }
 
         [HttpPost]
@@ -67,14 +66,14 @@ namespace EmployeeManagement.Controllers
                 return Json(new { success = true });
             }
 
-            return PartialView("_Edit", model);
+            return PartialView("Edit", model);
         }
 
         public async Task<IActionResult> DeleteModal(int id)
         {
             var model = await _departmentService.GetDepartmentByIdAsync(id);
             if (model == null) return NotFound();
-            return PartialView("_Delete", model);
+            return PartialView("Delete", model);
         }
 
         [HttpPost]
@@ -87,7 +86,7 @@ namespace EmployeeManagement.Controllers
             if (hasEmployees.Any(d => d.Id == model.Id))
             {
                 ModelState.AddModelError("", "Cannot delete department with assigned employees.");
-                return PartialView("_Delete", model);
+                return PartialView("Delete", model);
             }
 
             await _departmentService.DeleteDepartmentAsync(model.Id);

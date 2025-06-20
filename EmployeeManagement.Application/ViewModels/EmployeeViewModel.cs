@@ -35,12 +35,14 @@ namespace EmployeeManagement.Application.ViewModels
         public decimal Salary { get; set; }
 
 
-        [Display(Name = "Profile Image")]
-        public string ImagePath { get; set; }
-
 
         [Display(Name = "Active Status")]
         public bool IsActive { get; set; }
+
+
+        [Display(Name = "Profile Image")]
+        public string? ImagePath { get; set; }
+
 
         [Required(ErrorMessage = "Department is required")]
         [Display(Name = "Department")]
@@ -50,8 +52,8 @@ namespace EmployeeManagement.Application.ViewModels
         public int? ManagerId { get; set; }
 
         // Navigation Properties for Display
-        public string DepartmentName { get; set; }
-        public string ManagerName { get; set; }
+        public string? DepartmentName { get; set; }
+        public string? ManagerName { get; set; }
 
         //public IEnumerable<SelectListItem> Departments { get; set; }
         //public IEnumerable<SelectListItem> Managers { get; set; }

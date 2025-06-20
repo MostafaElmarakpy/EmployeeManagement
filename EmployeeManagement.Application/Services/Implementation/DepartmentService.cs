@@ -43,17 +43,37 @@ namespace EmployeeManagement.Application.Services.Implementation
 
         public async Task<IEnumerable<DepartmentViewModel>> GetAllDepartmentsAsync()
         {
-            var departments = await _unitOfWork.Departments.GetAllAsync();
-            return _mapper.Map<IEnumerable<DepartmentViewModel>>(departments);
+            var departments = await _unitOfWork.Departments
+                .GetAllAsync(includeProperties: "Employees");
+            var departmentViewModels = departments.Select(d =>
+            {
+                var vm = _mapper.Map<DepartmentViewModel>(d);
+                vm.EmployeeCount = d.Employees.Count;
+                vm.TotalSalary = d.Employees.Sum(e => e.Salary);
+                return vm;
+            });
+
+            return departmentViewModels;
+
         }
 
         public async Task<DepartmentViewModel> GetDepartmentByIdAsync(int id)
         {
-            var department = await _unitOfWork.Departments.GetByIdAsync(id);
+ 
+            var department = await _unitOfWork.Departments
+                .GetFirstOrDefaultAsync( filter :d => d.Id == id, includeProperties: "Employees");
+
             if (department == null)
-            {
-                throw new KeyNotFoundException($"Department with ID {id} not found.");
-            }
+                return null;
+
+            var departmentViewModel = _mapper.Map<DepartmentViewModel>(department);
+            departmentViewModel.EmployeeCount = department.Employees.Count;
+            departmentViewModel.TotalSalary = department.Employees.Sum(e => e.Salary);
+
+            return departmentViewModel;
+
+
+
             return _mapper.Map<DepartmentViewModel>(department);
         }
 
@@ -70,9 +90,7 @@ namespace EmployeeManagement.Application.Services.Implementation
             }
             _unitOfWork.Departments.Delete(department);
             await _unitOfWork.SaveChangesAsync();
-
         }
-
 
     }
 }

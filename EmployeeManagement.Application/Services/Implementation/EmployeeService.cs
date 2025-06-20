@@ -1,4 +1,5 @@
-﻿using EmployeeManagement.Application.Interfaces;
+﻿using AutoMapper;
+using EmployeeManagement.Application.Interfaces;
 using EmployeeManagement.Application.Services.Interfaces;
 using EmployeeManagement.Application.ViewModels;
 using EmployeeManagement.Domain.Models;
@@ -14,54 +15,55 @@ namespace EmployeeManagement.Application.Services.Implementation
     {
 
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
         public EmployeeService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
+        public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            return await _unitOfWork.Employees.GetActiveEmployeesAsync();
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<IEnumerable<EmployeeViewModel>> GetAllEmployeesAsync()
+        {
+            var employees = await _unitOfWork.Employees
+               .GetAllAsync(includeProperties: "Department,Manager");
+
+            return _mapper.Map<IEnumerable<EmployeeViewModel>>(employees);
         }
 
         public async Task<EmployeeViewModel?> GetEmployeeByIdAsync(int id)
         {
-            var employee = await _unitOfWork.Employees.GetByIdAsync(id);
-            if (employee == null || !employee.IsActive)
-            {
-                return null; // Employee not found or inactive
-            }
-            return new EmployeeViewModel
-            {
-                Id = employee.Id,
-                FirstName = employee.FirstName,
-                LastName = employee.LastName,
-                Salary = employee.Salary,
-                DepartmentId = employee.DepartmentId,
-                ManagerId = employee.ManagerId,
-                ImagePath = employee.ImagePath,
-            };
+            var employee = await _unitOfWork.Employees
+                .GetFirstOrDefaultAsync(filter: e => e.Id == id, includeProperties: "Department,Manager");
+
+            return _mapper.Map<EmployeeViewModel>(employee);
         }
 
-        public async Task<Employee> CreateEmployeeAsync(EmployeeViewModel employeeViewModel)
+        public async Task<EmployeeViewModel> CreateEmployeeAsync(EmployeeViewModel employeeViewModel)
         {
-            var employee = new Employee
-            {
-                FirstName = employeeViewModel.FirstName,
-                LastName = employeeViewModel.LastName,
-                Salary = employeeViewModel.Salary,
-                DepartmentId = employeeViewModel.DepartmentId,
-                ManagerId = employeeViewModel.ManagerId,
-                ImagePath = employeeViewModel.ImagePath,
-                CreatedAt = DateTime.UtcNow,
-                UpdateDate = DateTime.UtcNow,
-                IsActive = true
-            };
+            var employee = _mapper.Map<Employee>(employeeViewModel);
+            //var employee = new Employee
+            //{
+            //    FirstName = employeeViewModel.FirstName,
+            //    LastName = employeeViewModel.LastName,
+            //    Salary = employeeViewModel.Salary,
+            //    DepartmentId = employeeViewModel.DepartmentId,
+            //    ManagerId = employeeViewModel.ManagerId,
+            //    ImagePath = employeeViewModel.ImagePath,
+            //    CreatedAt = DateTime.UtcNow,
+            //    UpdateDate = DateTime.UtcNow,
+            //    IsActive = true
+            //};
+
 
             await _unitOfWork.Employees.AddAsync(employee);
             await _unitOfWork.SaveChangesAsync();
-            return employee;
+            return _mapper.Map<EmployeeViewModel>(employee);
         }
 
         public async Task UpdateEmployeeAsync(EmployeeViewModel employeeViewModel)
@@ -112,10 +114,7 @@ namespace EmployeeManagement.Application.Services.Implementation
             }
         }
 
-        Task<EmployeeViewModel?> IEmployeeService.GetEmployeeByIdAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
+        
 
 
     }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace EmployeeManagement.Infrastructure.Repositories
 {
@@ -31,8 +32,14 @@ namespace EmployeeManagement.Infrastructure.Repositories
             return await _dbSet.Where(expression).ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync(string includeProperties = null!)
         {
+            IQueryable<T> query = _dbSet;
+            if (includeProperties != null)
+                foreach (var includeProperty in includeProperties.Split(new char[] { ',' },
+                    StringSplitOptions.RemoveEmptyEntries))
+                    query = query.Include(includeProperty).AsSplitQuery().AsNoTracking();
+
             return await _dbSet.ToListAsync();
         }
 
@@ -41,10 +48,18 @@ namespace EmployeeManagement.Infrastructure.Repositories
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> expression)
+        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter = null!,
+                string includeProperties = null!)
         {
-            // Updated return type to match the interface definition
-            return await _dbSet.FirstOrDefaultAsync(expression);
+            IQueryable<T> query = _dbSet;
+            if (filter != null)
+                query = query.Where(filter);
+
+            if (includeProperties != null)
+                foreach (var includeProperty in includeProperties.Split(new char[] { ',' },
+                    StringSplitOptions.RemoveEmptyEntries))
+                    query = query.Include(includeProperty).AsSplitQuery().AsNoTracking();
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<int> CountAsync()

@@ -22,6 +22,12 @@ namespace EmployeeManagement.Application.ViewModels
         [Display(Name = "Manager")]
         public int? ManagerId { get; set; }
 
+
+        
+        [Display(Name = "Employee Count")]
+        [Range(0, int.MaxValue, ErrorMessage = "Employee Count must be a non-negative number")]
+        public int? EmployeeCount { get; set; }
+
         [DisplayFormat(DataFormatString = "{0:C}")]
         public decimal TotalSalary { get; set; }
     }

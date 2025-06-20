@@ -29,7 +29,7 @@ namespace EmployeeManagement.Controllers
 
        
 
-        [Authorize(Roles = "Manager")]
+
         public async Task<IActionResult> Create()
         {
             return View();
