@@ -27,6 +27,7 @@ namespace EmployeeManagement.Infrastructure.Repositories
         public IDepartmentRepository Departments { get; private set; }
         public ITaskRepository Tasks { get; private set; }
 
+        public IEmployeeTaskRepository EmployeeTasks { get; private set; }
 
         public void Dispose()
         {

@@ -20,9 +20,11 @@ namespace EmployeeManagement.Infrastructure.Repositories
 
         }
 
-              
+        public Task<IEnumerable<TaskItem>> GetOverdueTasksAsync()
+        {
+            throw new NotImplementedException();
+        }
 
-                 
         public  async Task<IEnumerable<TaskItem>> GetTasksByEmployeeIdAsync(int employeeId)
         {
             return await _dbContext.Tasks
@@ -32,14 +34,23 @@ namespace EmployeeManagement.Infrastructure.Repositories
 
         }
 
-        public  async Task<IEnumerable<TaskItem>> GetTasksByManagerIdAsync(int managerId)
+        public async Task<IEnumerable<TaskItem>> GetTasksByIdsAsync(IEnumerable<int> taskIds)
+        {
+            return await _dbContext.Tasks
+                .Where(t => taskIds.Contains(t.Id))
+                .Include(t => t.EmployeeTasks)
+                    .ThenInclude(te => te.Employee)
+                .ToListAsync();
+
+        }
+
+        public async Task<IEnumerable<TaskItem>> GetTasksByManagerIdAsync(int managerId)
         {
             return await _dbContext.Tasks
                 .Include(t => t.EmployeeTasks)
-                .ThenInclude(te => te.Employee)
-                //.Where(t => t.EmployeeTasks.ManagerId == managerId)
+                    .ThenInclude(te => te.Employee)
+                .Where(t => t.EmployeeTasks.Any(et => et.Employee != null && et.Employee.ManagerId == managerId))
                 .ToListAsync();
-
         }
                  
         public  async Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(Domain.Models.TaskStatus status)
