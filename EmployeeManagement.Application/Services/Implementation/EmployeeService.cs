@@ -114,8 +114,36 @@ namespace EmployeeManagement.Application.Services.Implementation
             }
         }
 
-        
+        public async Task<EmployeeViewModel> GetEmployeeByUserIdAsync(string userId)
+        {
+            // Find employee where InsertBy matches the userId
+            var employee = await _unitOfWork.Employees
+                .GetFirstOrDefaultAsync(
+                    filter: e => e.UserId == userId,
+                    includeProperties: "Department,Manager"
+                );
 
+            return _mapper.Map<EmployeeViewModel>(employee);
 
+        }
+
+        public Task<IEnumerable<EmployeeViewModel>> GetEmployeesByManagerAsync(int managerId)
+        {
+            return _unitOfWork.Employees
+                .GetAllAsync(filter: e => e.ManagerId == managerId, includeProperties: "Department,Manager")
+                .ContinueWith(task => _mapper.Map<IEnumerable<EmployeeViewModel>>(task.Result));
+        }
+
+        public Task<IEnumerable<EmployeeViewModel>> SearchEmployeesAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return GetAllEmployeesAsync();
+            }
+            return _unitOfWork.Employees
+                .GetAllAsync(filter: e => e.FirstName.Contains(searchTerm) || e.LastName.Contains(searchTerm),
+                             includeProperties: "Department,Manager")
+                .ContinueWith(task => _mapper.Map<IEnumerable<EmployeeViewModel>>(task.Result));
+        }
     }
 }

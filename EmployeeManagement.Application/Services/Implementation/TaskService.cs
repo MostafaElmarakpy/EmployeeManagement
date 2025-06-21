@@ -23,13 +23,23 @@ namespace EmployeeManagement.Application.Services.Implementation
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<TaskViewModel>> GetAllTasksAsync()
+        public async Task<IEnumerable<TaskMB>> GetAllTasksAsync()
         {
             var tasks = await _unitOfWork.Tasks.GetAllAsync();
-            return _mapper.Map<IEnumerable<TaskViewModel>>(tasks);
-
+            return _mapper.Map<IEnumerable<TaskMB>>(tasks);
         }
-        public async Task<TaskViewModel> CreateTaskAsync(TaskViewModel taskViewModel)
+
+        public async Task<TaskMB> GetTaskByIdAsync(int id)
+        {
+            var task = await _unitOfWork.Tasks.GetByIdAsync(id);
+            if (task == null)
+            {
+                return null;
+            }
+            return _mapper.Map<TaskMB>(task);
+        }
+
+        public async Task<TaskMB> CreateTaskAsync(TaskMB taskViewModel)
         {
             var task = _mapper.Map<TaskItem>(taskViewModel);
             task.CreatedAt = DateTime.UtcNow;
@@ -37,86 +47,120 @@ namespace EmployeeManagement.Application.Services.Implementation
             await _unitOfWork.Tasks.AddAsync(task);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<TaskViewModel>(task);
-        }
-        public async Task UpdateTaskAsync(TaskViewModel taskViewModel)
-        {
-            var task = _mapper.Map<TaskItem>(taskViewModel);
-            task.UpdateDate = DateTime.UtcNow;
-
-            _unitOfWork.Tasks.Update(task);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task DeleteTaskAsync(int id)
-        {
-            var task = await _unitOfWork.Tasks.GetByIdAsync(id);
-            if (task != null)
+            // Create task assignment
+            var employeeTask = new EmployeeTask
             {
+                TaskId = task.Id,
+                EmployeeId = taskViewModel.EmployeeId,
+                AssignedDate = DateTime.UtcNow
+            };
+
+            await _unitOfWork.EmployeeTasks.AddAsync(employeeTask);
+            await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<TaskMB>(task);
+        }
+
+        public async Task<bool> UpdateTaskAsync(TaskMB taskViewModel)
+        {
+            try
+            {
+                var task = await _unitOfWork.Tasks.GetByIdAsync(taskViewModel.Id);
+                if (task == null)
+                {
+                    return false;
+                }
+
+                _mapper.Map(taskViewModel, task);
+                task.UpdateDate = DateTime.UtcNow;
+
+                _unitOfWork.Tasks.Update(task);
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteTaskAsync(int id)
+        {
+            try
+            {
+                var task = await _unitOfWork.Tasks.GetByIdAsync(id);
+                if (task == null)
+                {
+                    return false;
+                }
+
+                // Delete related EmployeeTasks first
+                var employeeTasks = await _unitOfWork.EmployeeTasks.GetTaskAssignmentsByTaskIdAsync(id);
+                foreach (var et in employeeTasks)
+                {
+                    _unitOfWork.EmployeeTasks.Delete(et);
+                }
+
                 _unitOfWork.Tasks.Delete(task);
                 await _unitOfWork.SaveChangesAsync();
+                return true;
             }
-        }
-
-
-
-        public Task<IEnumerable<TaskViewModel>> GetOverdueTasksAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<TaskViewModel> GetTaskByIdAsync(int id)
-        {
-            var task = _unitOfWork.Tasks.GetByIdAsync(id);
-            if (task == null)
+            catch
             {
-                throw new KeyNotFoundException($"Task with ID {id} not found.");
+                return false;
             }
-            return _mapper.Map<TaskViewModel>(task);
         }
 
-        public async Task<IEnumerable<TaskViewModel>> GetTasksByEmployeeAsync(int employeeId)
+        public async Task<IEnumerable<TaskMB>> GetTasksByEmployeeAsync(int employeeId)
         {
-            var tasks = await _unitOfWork.Tasks.GetTasksByManagerIdAsync(employeeId);
-            if (tasks == null || !tasks.Any())
-            {
-                throw new KeyNotFoundException($"No tasks found for employee with ID {employeeId}.");
-            }
-            return _mapper.Map<IEnumerable<TaskViewModel>>(tasks);
+            var employeeTasks = await _unitOfWork.EmployeeTasks.GetTaskAssignmentsByEmployeeIdAsync(employeeId);
+            var taskIds = employeeTasks.Select(et => et.TaskId).ToList();
+
+            var tasks = await _unitOfWork.Tasks.GetTasksByIdsAsync(taskIds);
+            return _mapper.Map<IEnumerable<TaskMB>>(tasks);
         }
 
-        public async Task<IEnumerable<TaskViewModel>> GetTasksByStatusAsync(Domain.Models.TaskStatus status)
+        public async Task<IEnumerable<TaskMB>> GetTasksByManagerAsync(int managerId)
+        {
+            var tasks = await _unitOfWork.Tasks.GetTasksByManagerIdAsync(managerId);
+            return _mapper.Map<IEnumerable<TaskMB>>(tasks);
+        }
+
+        public async Task<IEnumerable<TaskMB>> GetTasksByStatusAsync(Domain.Models.TaskStatus status)
         {
             var tasks = await _unitOfWork.Tasks.GetTasksByStatusAsync(status);
-            return _mapper.Map<IEnumerable<TaskViewModel>>(tasks);
+            return _mapper.Map<IEnumerable<TaskMB>>(tasks);
         }
 
-        public async Task UnassignTaskFromEmployeeAsync(int taskId, int employeeId)
+        public async Task<IEnumerable<TaskMB>> GetOverdueTasksAsync()
         {
-            var task = await _unitOfWork.Tasks.GetByIdAsync(taskId);
-            if (task == null)
-            {
-                throw new KeyNotFoundException($"Task with ID {taskId} not found.");
-            }
-
-            // Check if the task is assigned to the specified employee
-            var isAssignedToEmployee = task.EmployeeTasks.Any(et => et.EmployeeId == employeeId);
-            if (!isAssignedToEmployee)
-            {
-                throw new InvalidOperationException($"Task with ID {taskId} is not assigned to employee with ID {employeeId}.");
-            }
-
-            // Remove the assignment
-            var employeeTask = task.EmployeeTasks.FirstOrDefault(et => et.EmployeeId == employeeId);
-            if (employeeTask != null)
-            {
-                task.EmployeeTasks.Remove(employeeTask);
-            }
-
-            task.UpdateDate = DateTime.UtcNow;
-            _unitOfWork.Tasks.Update(task);
-            await _unitOfWork.SaveChangesAsync();
+            var tasks = await _unitOfWork.Tasks.GetOverdueTasksAsync();
+            return _mapper.Map<IEnumerable<TaskMB>>(tasks);
         }
+
+        public async Task<bool> UpdateTaskStatusAsync(int taskId, Domain.Models.TaskStatus newStatus)
+        {
+            try
+            {
+                var task = await _unitOfWork.Tasks.GetByIdAsync(taskId);
+                if (task == null)
+                {
+                    return false;
+                }
+
+                task.Status = newStatus;
+                task.UpdateDate = DateTime.UtcNow;
+
+                _unitOfWork.Tasks.Update(task);
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public async Task AssignTaskToEmployeeAsync(int taskId, int employeeId)
         {
             var task = await _unitOfWork.Tasks.GetByIdAsync(taskId);
@@ -126,8 +170,8 @@ namespace EmployeeManagement.Application.Services.Implementation
             }
 
             // Check if the task is already assigned to the specified employee
-            var isAlreadyAssigned = task.EmployeeTasks.Any(et => et.EmployeeId == employeeId);
-            if (isAlreadyAssigned)
+            var existingAssignment = await _unitOfWork.EmployeeTasks.GetTaskAssignmentAsync(taskId, employeeId);
+            if (existingAssignment != null)
             {
                 throw new InvalidOperationException($"Task with ID {taskId} is already assigned to employee with ID {employeeId}.");
             }
@@ -139,16 +183,24 @@ namespace EmployeeManagement.Application.Services.Implementation
                 EmployeeId = employeeId,
                 AssignedDate = DateTime.UtcNow
             };
-            task.EmployeeTasks.Add(employeeTask);
 
-            task.UpdateDate = DateTime.UtcNow;
-            _unitOfWork.Tasks.Update(task);
+            await _unitOfWork.EmployeeTasks.AddAsync(employeeTask);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public Task<IEnumerable<TaskViewModel>> GetTasksByStatusAsync(System.Threading.Tasks.TaskStatus status)
+        public async Task UnassignTaskFromEmployeeAsync(int taskId, int employeeId)
         {
-            throw new NotImplementedException();
+            var employeeTask = await _unitOfWork.EmployeeTasks.GetTaskAssignmentAsync(taskId, employeeId);
+            if (employeeTask == null)
+            {
+                throw new KeyNotFoundException($"Task assignment not found for task {taskId} and employee {employeeId}.");
+            }
+
+            _unitOfWork.EmployeeTasks.Delete(employeeTask);
+            await _unitOfWork.SaveChangesAsync();
         }
+
+
     }
 }
+
