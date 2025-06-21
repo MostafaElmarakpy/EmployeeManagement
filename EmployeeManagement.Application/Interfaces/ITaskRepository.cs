@@ -12,8 +12,15 @@ namespace EmployeeManagement.Application.Interfaces
         Task<IEnumerable<TaskItem>> GetTasksByEmployeeIdAsync(int employeeId);
         Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(Domain.Models.TaskStatus status);
         Task<IEnumerable<TaskItem>> GetTasksByManagerIdAsync(int managerId);
+        Task<IEnumerable<TaskItem>> GetTasksByIdsAsync(IEnumerable<int> taskIds);
+        Task<IEnumerable<TaskItem>> GetOverdueTasksAsync();
+    }
 
-
-
+    public interface IEmployeeTaskRepository : IGenericRepository<EmployeeTask>
+    {
+        Task<IEnumerable<EmployeeTask>> GetTaskAssignmentsByEmployeeIdAsync(int employeeId);
+        Task<IEnumerable<EmployeeTask>> GetTaskAssignmentsByTaskIdAsync(int taskId);
+        Task<EmployeeTask> GetTaskAssignmentAsync(int taskId, int employeeId);
     }
 }
+

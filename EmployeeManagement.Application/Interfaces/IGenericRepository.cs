@@ -10,7 +10,7 @@ namespace EmployeeManagement.Application.Interfaces
     public interface IGenericRepository<T> where T : class
     {
         Task<T> GetByIdAsync(int id);
-        Task<IEnumerable<T>> GetAllAsync(string includeProperties = null);
+        Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null!, string includeProperties = null);
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression);
         Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter = null, string includeProperties = null);
         Task AddAsync(T entity);
