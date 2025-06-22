@@ -177,25 +177,6 @@ namespace EmployeeManagement.Infrastructure.Data
         {
             try
             {
-                // First ensure departments exist
-                if (!_context.Departments.Any())
-                {
-                    var departmentData = File.ReadAllText("../EmployeeManagement.Infrastructure/Data/DataSeed/Departments.json");
-                    var departments = JsonSerializer.Deserialize<List<Department>>(departmentData,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                    if (departments == null)
-                        throw new Exception("Failed to deserialize departments data");
-
-                    foreach (var dept in departments)
-                    {
-                        dept.CreatedAt = DateTime.UtcNow;
-                        dept.IsActive = true;
-                    }
-
-                    await _context.Departments.AddRangeAsync(departments);
-                    await _context.SaveChangesAsync();
-                }
 
                 // Create manager user if doesn't exist
                 ApplicationUser? managerUser = await _userManager.FindByNameAsync("manager");
@@ -239,34 +220,7 @@ namespace EmployeeManagement.Infrastructure.Data
                     await _context.SaveChangesAsync();
                 }
 
-                // Seed regular employees if none exist
-                if (!_context.Employees.Any(e => e.UserId == null))
-                {
-                    var employeesData = File.ReadAllText("../EmployeeManagement.Infrastructure/Data/DataSeed/Employees.json");
-                    var employees = JsonSerializer.Deserialize<List<Employee>>(employeesData,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    if (employees == null)
-                        throw new Exception("Failed to deserialize employees data");
-
-                    var departments = await _context.Departments.ToListAsync();
-
-                    foreach (var employee in employees)
-                    {
-                        // Ensure we map to existing department
-                        var departmentIndex = ((employee.DepartmentId - 1) % departments.Count);
-                        employee.DepartmentId = departments[departmentIndex].Id;
-                        employee.ManagerId = managerEmployee.Id;
-                        employee.IsActive = true;
-                        employee.CreatedAt = DateTime.UtcNow;
-                        
-
-
-                    }
-
-                    await _context.Employees.AddRangeAsync(employees);
-                    await _context.SaveChangesAsync();
-                }
             }
             catch (Exception ex)
             {
