@@ -1,7 +1,9 @@
 ﻿using EmployeeManagement.Application.Services.Interfaces;
 using EmployeeManagement.Application.ViewModels;
+using EmployeeManagement.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,36 +13,25 @@ namespace EmployeeManagement.Controllers
     public class DepartmentsController : Controller
     {
         private readonly IDepartmentService _departmentService;
+        private readonly ApplicationDbContext _dbContext;
 
-        public DepartmentsController(IDepartmentService departmentService)
+        public DepartmentsController(IDepartmentService departmentService, ApplicationDbContext dbContext)
         {
             _departmentService = departmentService;
+            _dbContext = dbContext;
         }
 
         // GET: Departments
         public async Task<IActionResult> Index(string searchTerm = "")
         {
-            try
-            {
-                IEnumerable<DepartmentViewModel> departments;
+            // Fetch all departments with their employees included
 
-                if (!string.IsNullOrWhiteSpace(searchTerm))
-                {
-                    departments = await _departmentService.SearchDepartmentsAsync(searchTerm);
-                }
-                else
-                {
-                    departments = await _departmentService.GetAllDepartmentsAsync();
-                }
+            var departments = await _departmentService.GetDepartmentSummaries(searchTerm);
+            // If search term is provided, filter the departments
 
-                ViewBag.SearchTerm = searchTerm;
-                return View(departments);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "Unable to load departments. Please try again.";
-                return View(new List<DepartmentViewModel>());
-            }
+            return View(departments);
+            
+      
         }
 
         [HttpPost]
@@ -71,7 +62,7 @@ namespace EmployeeManagement.Controllers
                 await _departmentService.CreateDepartmentAsync(model);
                 return Json(new { success = true });
             }
-            return PartialView("_Create", model);
+            return PartialView("Create", model);
         }
 
         // GET: Departments/Edit/5
@@ -85,6 +76,12 @@ namespace EmployeeManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> EditModal(DepartmentViewModel model)
         {
+            //if (ModelState.IsValid)
+            //{
+            //    await _departmentService.UpdateDepartmentAsync(model);
+            //    return Json(new { success = true });
+            //}
+
             if (ModelState.IsValid)
             {
                 try
