@@ -33,12 +33,17 @@ namespace EmployeeManagement.Application.Services.Implementation
 
         public async Task UpdateDepartmentAsync(DepartmentViewModel departmentViewModel)
         {
-            var department = _mapper.Map<Department>(departmentViewModel);
-            department.UpdateDate = DateTime.UtcNow;
+            var department = await _unitOfWork.Departments.GetByIdAsync(departmentViewModel.Id);
+
+            if (department == null)
+                return null;
+
+            _mapper.Map(departmentViewModel, department);
 
             _unitOfWork.Departments.Update(department);
-            await _unitOfWork.SaveChangesAsync();
-        }
+            await _unitOfWork.CompleteAsync();
+
+            return _mapper.Map<DepartmentViewModel>(department);
 
 
         public async Task<IEnumerable<DepartmentViewModel>> GetAllDepartmentsAsync()
@@ -141,6 +146,21 @@ namespace EmployeeManagement.Application.Services.Implementation
             _unitOfWork.Departments.Delete(department);
             await _unitOfWork.SaveChangesAsync();
         }
+
+
+        public async Task<IEnumerable<DepartmentViewModel>> GetDepartmentSummaries(string searchString)
+        {
+            var departmentsTask = await _unitOfWork.Departments.GetDepartmentsWithDetailsAsync(searchString);
+
+            return departmentsTask.Select(d => new DepartmentViewModel
+            {
+                Id = d.Id,
+                Name = d.Name,
+                EmployeeCount = d.Employees.Count(),
+                TotalSalary = d.Employees.Sum(e => (decimal?)e.Salary) ?? 0
+            }).ToList();
+        }
+
 
     }
 }

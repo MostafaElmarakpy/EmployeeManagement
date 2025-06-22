@@ -18,5 +18,7 @@ namespace EmployeeManagement.Application.Services.Interfaces
         //Task<bool> AssignManagerToDepartmentAsync(int departmentId, int managerId);
         Task<bool> CanDeleteDepartmentAsync(int id);
         Task<IEnumerable<DepartmentViewModel>> SearchDepartmentsAsync(string searchTerm);
+
+        Task<IEnumerable<DepartmentViewModel>> GetDepartmentSummaries(string searchString);
     }
 }
