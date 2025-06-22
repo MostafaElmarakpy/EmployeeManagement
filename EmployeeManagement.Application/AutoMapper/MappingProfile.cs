@@ -13,28 +13,32 @@ namespace EmployeeManagement.Application.AutoMapper
     {
         public MappingProfile()
         {
-            // Domain to ViewModel
+            // Domain to ViewModel  
             CreateMap<Department, DepartmentViewModel>();
+
+
+            // Map Employee to EmployeeViewModel with Department and Manager names
             CreateMap<Employee, EmployeeViewModel>()
                 .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department.Name))
-                .ForMember(dest => dest.ManagerName, opt => opt.MapFrom(src => src.Manager.FullName));
+                .ForMember(dest => dest.ManagerName, opt => opt.MapFrom(src => src.Manager != null ? src.Manager.FullName : null))
+                .AfterMap((src, dest) =>
+                {
+                    Console.WriteLine($"Mapping Employee: {src.Id} -> {dest.Id}, Department: {dest.DepartmentName}, Manager: {dest.ManagerName}");
+                });
 
 
-            // ViewModel to Domain
+            // ViewModel to Domain  
             CreateMap<DepartmentViewModel, Department>();
             CreateMap<EmployeeViewModel, Employee>();
             CreateMap<EmployeeViewModel, EmployeeViewModel>();
-            // Custom mapping for EmployeeViewModel to Employee with ImageFile handling
 
-            CreateMap<EmployeeViewModel, Employee>()
-                .ForMember(dest => dest.ImagePath, opt => opt.Ignore())
-                .ForMember(dest => dest.ImageFile, opt => opt.Ignore())
-                .ForMember(dest => dest.User, opt => opt.Ignore())
-                .ForMember(dest => dest.ManagedEmployees, opt => opt.Ignore())
-                .ForMember(dest => dest.EmployeeTasks, opt => opt.Ignore());
-
-
-
+            // Custom mapping for EmployeeViewModel to Employee with ImageFile handling  
+            CreateMap<Employee, EmployeeViewModel>()
+                .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath))
+                .AfterMap((src, dest) =>
+                {
+                    Console.WriteLine($"Mapping ImagePath: {src.ImagePath} -> {dest.ImagePath}");
+                });
         }
     }
 
