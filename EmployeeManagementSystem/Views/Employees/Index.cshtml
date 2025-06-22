@@ -8,7 +8,6 @@
 
 <p>
     <a href="javascript:;" class="btn btn-primary btn-create-employee">Create New</a>
-
 </p>
 <div id="modal-placeholder"></div>
 
@@ -17,7 +16,8 @@
         <form asp-action="Index" method="get" class="row g-3">
             <div class="col-md-6">
                 <div class="input-group">
-                   
+                    <input type="text" name="searchString" class="form-control" placeholder="Search by name or department..." />
+                    <button type="submit" class="btn btn-outline-secondary">Search</button>
                 </div>
             </div>
         </form>
@@ -54,17 +54,9 @@
                         <td>@Html.DisplayFor(modelItem => item.FullName)</td>
                         <td>@Html.DisplayFor(modelItem => item.Salary)</td>
                         <td>@item.DepartmentName</td>
-                        @* <td>@(string.IsNullOrEmpty(item.ManagerName) ? "-" : item.ManagerName)</td> *@
                         <td>
-
-                            @*<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="@item.Id">Edit</a>
-                            <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="@item.Id">Delete</a>
- *@
                             <a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="@item.Id">Edit</a>
                             <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="@item.Id">Delete</a>
-
-                            @* <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a> *@
-                            @* <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a> *@
                         </td>
                     </tr>
                 }
@@ -76,10 +68,9 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Initialize DataTable only once
+            // Initialize DataTable with correct column count (7 columns)
             let employeeTable;
 
-            // Check if table is already initialized
             if (!$.fn.DataTable.isDataTable('#employeesTable')) {
                 employeeTable = $('#employeesTable').DataTable({
                     paging: true,
@@ -87,13 +78,17 @@
                     info: true,
                     searching: false,
                     lengthChange: true,
-                    destroy: true // Allow reinitialization if needed
+                    destroy: true,
+                    columnDefs: [
+                        { orderable: false, targets: [0, 6] }, // Disable ordering for Image and Actions columns
+                        { searchable: false, targets: [0, 6] }  // Disable searching for Image and Actions columns
+                    ]
                 });
             } else {
                 employeeTable = $('#employeesTable').DataTable();
             }
 
-
+            // Create Employee Modal
             $('body').on('click', '.btn-create-employee', function () {
                 $.get('/Employees/CreateModal')
                     .done(function (html) {
@@ -127,6 +122,7 @@
                                 ? `<img src="${e.imagePath}" alt="${e.fullName}" class="employee-image" style="max-width: 50px; max-height: 50px;" />`
                                 : `<img src="/images/default-user.png" alt="Default" class="employee-image" style="max-width: 50px; max-height: 50px;" />`;
 
+                            // Add new row with correct column count (7 columns)
                             employeeTable.row.add([
                                 image,
                                 e.firstName,
@@ -134,7 +130,6 @@
                                 e.fullName,
                                 e.salary,
                                 e.departmentName,
-                                e.managerName,
                                 `<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="${e.id}">Edit</a>
                                  <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
                             ]).draw(false);
@@ -149,20 +144,23 @@
                 });
             });
 
-            // ============================
-            // Load Edit Modal
-            // ============================
-                  $('body').on('click', '.btn-edit-employee', function () {
-            const id = $(this).data('id');
-            $.get(`/Employees/EditModal/${id}`, function (html) {
-                $('#modal-placeholder').html(html);
-                $('#modal-placeholder .modal').modal('show');
+            // Edit Employee Modal
+            $('body').on('click', '.btn-edit-employee', function () {
+                const id = $(this).data('id');
+                $.get(`/Employees/EditModal/${id}`, function (html) {
+                    $('#modal-placeholder').html(html);
+                    $('#modal-placeholder .modal').modal('show');
+                });
             });
-        });
 
+
+
+            // Submit Edit Form via AJAX
+        // تحسين معالج Edit Form
         $('body').on('submit', '#editEmployeeForm', function (e) {
             e.preventDefault();
             const formData = new FormData(this);
+            const employeeId = formData.get('Id'); // get employee ID
 
             $.ajax({
                 type: 'POST',
@@ -172,61 +170,72 @@
                 processData: false,
                 success: function (response) {
                     if (response.success) {
-                        $('.modal').modal('hide');
+                        // إغلاق Modal
+                        $('#modal-placeholder .modal').modal('hide');
                         $('.modal-backdrop').remove();
 
                         const e = response.employee;
-                        const row = $(`.btn-edit-employee[data-id='${e.id}']`).closest('tr');
-                        const image = e.imagePath
-                            ? `<img src="${e.imagePath}" class="employee-image" style="max-width:50px; max-height:50px;" />`
-                            : `<img src="/images/default-user.png" class="employee-image" style="max-width:50px; max-height:50px;" />`;
-
-                        // Update row in DataTable
-                        employeeTable.row(row).data([
-                            image,
-                            e.firstName,
-                            e.lastName,
-                            e.fullName,
-                            e.salary,
-                            e.departmentName,
-                            e.managerName,
-                            `<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="${e.id}">Edit</a>
-                             <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
-                        ]).draw(false);
+                        // تحديث الصف في الجدول
+                        const row = employeeTable.row($(`tr:has(.btn-edit-employee[data-id='${employeeId}'])`));
+                        if (row) {
+                            row.data([
+                                e.imagePath ? `<img src="${e.imagePath}?${new Date().getTime()}" alt="${e.fullName}" class="employee-image" style="max-width: 50px; max-height: 50px;" />`
+                                          : `<img src="/images/default-user.png" alt="Default" class="employee-image" style="max-width: 50px; max-height: 50px;" />`,
+                                e.firstName,
+                                e.lastName,
+                                e.fullName,
+                                e.salary,
+                                e.departmentName,
+                                `<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="${e.id}">Edit</a>
+                                 <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
+                            ]).draw(false);
+                        }
                     } else {
+                        // عرض الأخطاء إن وجدت
                         $('#modal-placeholder').html(response);
+                        $('#modal-placeholder .modal').modal('show');
                     }
+                },
+                error: function (xhr) {
+                    console.error("Edit error:", xhr.responseText);
+                    alert("Error updating employee. Please try again.");
                 }
             });
         });
 
-        // ========= Delete =========
-        $('body').on('click', '.btn-delete-employee', function () {
-            const id = $(this).data('id');
-            $.get(`/Employees/DeleteModal/${id}`, function (html) {
-                $('#modal-placeholder').html(html);
-                $('#modal-placeholder .modal').modal('show');
-            });
-        });
-
+        // تحسين معالج Delete Form
         $('body').on('submit', '#deleteEmployeeForm', function (e) {
             e.preventDefault();
-            const row = $(`.btn-delete-employee[data-id='${$('#Id').val()}']`).closest('tr');
+            const employeeId = $('#Id').val();
+            const row = employeeTable.row($(`tr:has(.btn-delete-employee[data-id='${employeeId}'])`));
 
-            $.post('/Employees/DeleteModal', $(this).serialize(), function (response) {
-                if (response.success) {
-                    $('.modal').modal('hide');
-                    $('.modal-backdrop').remove();
+            $.ajax({
+                type: 'POST',
+                url: '/Employees/DeleteModal',
+                data: $(this).serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        // إغلاق Modal
+                        $('#modal-placeholder .modal').modal('hide');
+                        $('.modal-backdrop').remove();
 
-                    employeeTable.row(row).remove().draw(false);
-                } else {
-                    $('#modal-placeholder').html(response);
+                        // حذف الصف من الجدول
+                        if (row) {
+                            row.remove().draw(false);
+                        }
+                    } else {
+                        $('#modal-placeholder').html(response);
+                        $('#modal-placeholder .modal').modal('show');
+                    }
+                },
+                error: function (xhr) {
+                    console.error("Delete error:", xhr.responseText);
+                    alert("Error deleting employee. Please try again.");
                 }
             });
         });
-         });
+
+        });
     </script>
+}
 
-
-
-} 
