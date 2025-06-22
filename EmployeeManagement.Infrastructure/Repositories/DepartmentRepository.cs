@@ -16,7 +16,6 @@ namespace EmployeeManagement.Infrastructure.Repositories
         public DepartmentRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
-
         }
 
         public async Task<bool> DeleteDepartmentAsync(int id)
@@ -48,6 +47,20 @@ namespace EmployeeManagement.Infrastructure.Repositories
                 .Include(d => d.Manager) 
                 .FirstOrDefaultAsync(d => d.Id == id);
 
+        }
+
+        public async Task<IEnumerable<Department>> GetDepartmentsWithDetailsAsync(string searchString)
+        {
+            var query = _dbContext.Departments
+                .Include(d => d.Employees)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                query = query.Where(d => d.Name.Contains(searchString));
+            }
+
+            return await query.ToListAsync();
         }
     }
 }
