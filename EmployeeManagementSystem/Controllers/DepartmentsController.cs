@@ -18,17 +18,42 @@ namespace EmployeeManagement.Controllers
         }
 
         // GET: Departments
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm = "")
         {
             try
             {
-                IEnumerable<DepartmentViewModel> departments = await _departmentService.GetAllDepartmentsAsync();
+                IEnumerable<DepartmentViewModel> departments;
+
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    departments = await _departmentService.SearchDepartmentsAsync(searchTerm);
+                }
+                else
+                {
+                    departments = await _departmentService.GetAllDepartmentsAsync();
+                }
+
+                ViewBag.SearchTerm = searchTerm;
                 return View(departments);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = "Unable to load departments. Please try again.";
                 return View(new List<DepartmentViewModel>());
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Search(string searchTerm)
+        {
+            try
+            {
+                var departments = await _departmentService.SearchDepartmentsAsync(searchTerm);
+                return PartialView("_DepartmentTableRows", departments);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Search failed. Please try again." });
             }
         }
 
@@ -46,7 +71,7 @@ namespace EmployeeManagement.Controllers
                 await _departmentService.CreateDepartmentAsync(model);
                 return Json(new { success = true });
             }
-            return PartialView("Create", model);
+            return PartialView("_Create", model);
         }
 
         // GET: Departments/Edit/5
@@ -62,8 +87,26 @@ namespace EmployeeManagement.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _departmentService.UpdateDepartmentAsync(model);
-                return Json(new { success = true });
+                try
+                {
+                    await _departmentService.UpdateDepartmentAsync(model);
+                    var updated = await _departmentService.GetDepartmentByIdAsync(model.Id);
+                    return Json(new
+                    {
+                        success = true,
+                        department = new
+                        {
+                            id = updated.Id,
+                            name = updated.Name,
+                            employeeCount = updated.EmployeeCount,
+                            totalSalary = updated.TotalSalary.ToString("C")
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Failed to update department. Please try again.");
+                }
             }
 
             return PartialView("Edit", model);
@@ -79,18 +122,22 @@ namespace EmployeeManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteModal(DepartmentViewModel model)
         {
-            var department = await _departmentService.GetDepartmentByIdAsync(model.Id);
-            if (department == null) return NotFound();
-
-            var hasEmployees = await _departmentService.GetDepartmentsWithEmployeesAsync();
-            if (hasEmployees.Any(d => d.Id == model.Id))
+            try
             {
-                ModelState.AddModelError("", "Cannot delete department with assigned employees.");
-                return PartialView("Delete", model);
-            }
+                var canDelete = await _departmentService.CanDeleteDepartmentAsync(model.Id);
+                if (!canDelete)
+                {
+                    return Json(new { success = false, message = "Cannot delete department with assigned employees." });
+                }
 
-            await _departmentService.DeleteDepartmentAsync(model.Id);
-            return Json(new { success = true });
+                await _departmentService.DeleteDepartmentAsync(model.Id);
+                return Json(new { success = true, id = model.Id });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Failed to delete department. Please try again." });
+            }
         }
     }
 }
+

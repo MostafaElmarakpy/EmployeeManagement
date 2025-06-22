@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.IO;
+using System.Runtime.Intrinsics.Arm;
 using System.Threading.Tasks;
 
 namespace EmployeeManagement.Controllers
@@ -27,26 +28,22 @@ namespace EmployeeManagement.Controllers
             _hostEnvironment = hostEnvironment;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var employees = await _employeeService.GetAllEmployeesAsync();
-            // If GetAllEmployeesAsync returns List<Employee>, map to List<EmployeeViewModel>
-            var employeeViewModels = employees.Select(e => new EmployeeViewModel
+
+            if (!string.IsNullOrEmpty(searchString))
             {
-                Id = e.Id,
-                FirstName = e.FirstName,
-                LastName = e.LastName,
-                Salary = e.Salary,
-                DepartmentId = e.DepartmentId,
-                ManagerId = e.ManagerId,
-                ImagePath = e.ImagePath
-            }).ToList();
+                var searchResults = await _employeeService.SearchEmployeesAsync(searchString);
+                return View(searchResults);
+            }
 
-            //var employeeViewModels = _mapper.Map<List<EmployeeViewModel>>(employees);
+            var employees = await _employeeService.GetAllEmployeesAsync();
+           
 
-            return View(employeeViewModels); 
+            return View(employees); 
             
         }
+
         [HttpGet]
         public async Task<IActionResult> CreateModal()
         {
@@ -57,9 +54,17 @@ namespace EmployeeManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateModal([FromForm] EmployeeViewModel model)
         {
+
+
             if (ModelState.IsValid)
             {
-                var saved = await _employeeService.CreateEmployeeAsync(model);
+            var saved = await _employeeService.CreateEmployeeAsync(model, model.ImageFile);
+
+                if (model.ImageFile != null && saved != null)
+                {
+                    // Save the image file if it exists
+                    saved.ImagePath = await _employeeService.SaveEmployeeImageAsync(model.ImageFile);
+                }
 
                 if (saved != null)
                 {
@@ -74,9 +79,8 @@ namespace EmployeeManagement.Controllers
                             fullName = saved.FullName,
                             salary = saved.Salary.ToString("0.##"),
                             imagePath = saved.ImagePath,
-
                             departmentName = saved.DepartmentName,
-                            //managerName = string.IsNullOrEmpty(saved.ManagerName) ? "-" : saved.ManagerName
+                            managerName = string.IsNullOrEmpty(saved.ManagerName) ? "-" : saved.ManagerName
                         }
                     });
                 }
@@ -91,11 +95,6 @@ namespace EmployeeManagement.Controllers
             return PartialView("Create", model);
         }
 
-        public async Task<IActionResult> GetEmployeeTableRows()
-        {
-            var employeeViewModels = await _employeeService.GetAllEmployeesAsync();
-            return PartialView("EmployeeTableRows", employeeViewModels);
-        }
 
         [HttpGet]
         public async Task<IActionResult> EditModal(int id)
@@ -110,11 +109,14 @@ namespace EmployeeManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> EditModal([FromForm] EmployeeViewModel model)
         {
-            if (ModelState.IsValid)
-            {
-                await _employeeService.UpdateEmployeeAsync(model); // Fix: Removed assignment to a variable since UpdateEmployeeAsync returns void.
-
-                return Json(new
+          
+                await _employeeService.UpdateEmployeeAsync(model,model.ImageFile); // Fix: Removed assignment to a variable since UpdateEmployeeAsync returns void.
+                if (model.ImageFile != null )
+                {
+                    // Save the image file if it exists
+                    model.ImagePath = await _employeeService.SaveEmployeeImageAsync(model.ImageFile);
+                }
+            return Json(new
                 {
                     success = true,
                     employee = new
@@ -129,7 +131,7 @@ namespace EmployeeManagement.Controllers
                         managerName = string.IsNullOrEmpty(model.ManagerName) ? "-" : model.ManagerName
                     }
                 });
-            }
+            
 
             await PopulateViewBag(model.DepartmentId, model.ManagerId);
             return PartialView("Edit", model);
