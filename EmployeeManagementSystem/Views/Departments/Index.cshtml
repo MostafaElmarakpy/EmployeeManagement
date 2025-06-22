@@ -50,165 +50,104 @@
     </div>
 </div>
 
+
+
 @section Scripts {
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function () {
-            let departmentTable;
-
-            // Initialize DataTable
-            if (!$.fn.DataTable.isDataTable('#departmentsTable')) {
-                departmentTable = $('#departmentsTable').DataTable({
-                    paging: true,
-                    ordering: true,
-                    info: true,
-                    searching: false,
-                    lengthChange: true,
-                    destroy: true,
-                    columnDefs: [
-                        { orderable: false, targets: [3] }, // Disable ordering for Actions column
-                        { searchable: false, targets: [3] }  // Disable searching for Actions column
-                    ]
-                });
-            } else {
-                departmentTable = $('#departmentsTable').DataTable();
-            }
-
-            // Search functionality
-            $('#searchBtn').on('click', function() {
-                performSearch();
+            // Initialize DataTable only once
+            $('#departmentsTable').DataTable({
+                "paging": true,
+                "ordering": true,
+                "info": true,
+                "searching": false, // We're using our own search
+                "lengthChange": true,
+                "destroy": true // Allow reinitialization if needed
             });
 
-            $('#searchInput').on('keypress', function(e) {
-                if (e.which === 13) { // Enter key
-                    performSearch();
+         // Load Create Department Modal
+        $('body').on('click', '.btn-create', function () {
+            $.get('/Departments/CreateModal', function (html) {
+                $('#modal-placeholder').html(html);
+                // The script inside the modal will show it
+            });
+        });
+
+        // Submit Create Department Form
+        $('body').on('submit', '#createDepartmentForm', function (e) {
+            e.preventDefault();
+            $.post('/Departments/CreateModal', $(this).serialize(), function (response) {
+                if (response.success) {
+                    $('#createDepartmentModal').modal('hide');
+                    $('.modal-backdrop').remove(); // Remove backdrop if needed
+                    location.reload(); // Or update table via AJAX
+                } else {
+                    // Validation failed, response is HTML partial
+                    $('#modal-placeholder').html(response);
+                    // The script in partial will show the modal again
                 }
             });
+        });
 
-            function performSearch() {
-                const searchTerm = $('#searchInput').val();
-                window.location.href = `/Departments?searchTerm=${encodeURIComponent(searchTerm)}`;
+                // Helper to show a modal and clean any old backdrops
+        function showModal(html) {
+            // Remove any previous modal and backdrop
+            $('.modal').modal('hide');
+            $('.modal-backdrop').remove();
+            $('#modal-placeholder').html(html);
+            $('#modal-placeholder .modal').modal('show');
+            // If using .NET client-side validation
+            if (typeof $.validator !== 'undefined') {
+                $.validator.unobtrusive.parse('#editForm');
             }
+        }
 
-            // Create Department Modal
-            $('body').on('click', '.btn-create', function () {
-                $.get('/Departments/CreateModal')
-                    .done(function (html) {
-                        $('#modal-placeholder').html(html);
-                        $('#modal-placeholder .modal').modal('show');
-                    })
-                    .fail(function (xhr) {
-                        console.error("Failed to load create modal:", xhr.responseText);
-                    });
+        // Load Edit Modal
+        $('body').on('click', '.btn-edit', function () {
+            const id = $(this).data('id');
+            $.get(`/Departments/EditModal/${id}`, function (html) {
+                showModal(html);
             });
+        });
 
-            // Submit Create Form
-            $('body').on('submit', '#createForm', function (e) {
-                e.preventDefault();
-                $.post('/Departments/CreateModal', $(this).serialize())
-                    .done(function (response) {
-                        if (response.success) {
-                            $('.modal').modal('hide');
-                            $('.modal-backdrop').remove();
-
-                            const dept = response.department;
-                            // Add new row to DataTable
-                            departmentTable.row.add([
-                                dept.name,
-                                dept.employeeCount,
-                                dept.totalSalary,
-                                `<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit" data-id="${dept.id}">Edit</a>
-                                 <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete" data-id="${dept.id}">Delete</a>`
-                            ]).draw(false);
-                        } else {
-                            $('#modal-placeholder').html(response);
-                            $('#modal-placeholder .modal').modal('show');
-                        }
-                    })
-                    .fail(function (xhr) {
-                        console.error("Create error:", xhr.responseText);
-                    });
-            });
+        // Submit Edit
+ $('body').on('submit', '#editForm', function (e) {
+    e.preventDefault();
+    $.post('/Departments/EditModal', $(this).serialize(), function (response) {
+        if (response.success) {
+            location.reload();
+        } else {
+            $('#modal-placeholder').html(response);
+            $('#modal-placeholder .modal').modal('show');
+            if (typeof $.validator !== 'undefined') {
+                $.validator.unobtrusive.parse('#editForm');
+            }
+        }
+    });
 
 
-
-            // Edit Department Modal
-            $('body').on('click', '.btn-edit', function () {
-                const id = $(this).data('id');
-                $.get(`/Departments/EditModal/${id}`)
-                    .done(function (html) {
-                        $('#modal-placeholder').html(html);
-                        $('#modal-placeholder .modal').modal('show');
-                    })
-                    .fail(function (xhr) {
-                        console.error("Failed to load edit modal:", xhr.responseText);
-                    });
-            });
-
-            // Submit Edit Form
-            $('body').on('submit', '#editForm', function (e) {
-                e.preventDefault();
-                $.post('/Departments/EditModal', $(this).serialize())
-                    .done(function (response) {
-                        if (response.success) {
-                            $('.modal').modal('hide');
-                            $('.modal-backdrop').remove();
-
-                            const dept = response.department;
-                            const row = $(`.btn-edit[data-id='${dept.id}']`).closest('tr');
-
-                            // Update row in DataTable
-                            departmentTable.row(row).data([
-                                dept.name,
-                                dept.employeeCount,
-                                dept.totalSalary,
-                                `<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit" data-id="${dept.id}">Edit</a>
-                                 <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete" data-id="${dept.id}">Delete</a>`
-                            ]).draw(false);
-                        } else {
-                            $('#modal-placeholder').html(response);
-                            $('#modal-placeholder .modal').modal('show');
-                        }
-                    })
-                    .fail(function (xhr) {
-                        console.error("Edit error:", xhr.responseText);
-                    });
-            });
-
-            // Delete Department Modal
+            // Load Delete Modal
             $('body').on('click', '.btn-delete', function () {
                 const id = $(this).data('id');
-                $.get(`/Departments/DeleteModal/${id}`)
-                    .done(function (html) {
-                        $('#modal-placeholder').html(html);
-                        $('#modal-placeholder .modal').modal('show');
-                    })
-                    .fail(function (xhr) {
-                        console.error("Failed to load delete modal:", xhr.responseText);
-                    });
+                $.get(`/Departments/DeleteModal/${id}`, function (html) {
+                    $('#modal-placeholder').html(html);
+                    $('#modal-placeholder .modal').modal('show');
+                });
             });
 
-            // Submit Delete Form
+            // Submit Delete
             $('body').on('submit', '#deleteForm', function (e) {
                 e.preventDefault();
-                const id = $('#Id').val();
-                const row = $(`.btn-delete[data-id='${id}']`).closest('tr');
-
-                $.post('/Departments/DeleteModal', $(this).serialize())
-                    .done(function (response) {
-                        if (response.success) {
-                            $('.modal').modal('hide');
-                            $('.modal-backdrop').remove();
-                            departmentTable.row(row).remove().draw(false);
-                        } else {
-                            alert(response.message || 'Failed to delete department');
-                        }
-                    })
-                    .fail(function (xhr) {
-                        console.error("Delete error:", xhr.responseText);
-                        alert('Failed to delete department. Please try again.');
-                    });
+                $.post('/Departments/DeleteModal', $(this).serialize(), function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        $('#modal-placeholder').html(response);
+                    }
+                });
             });
         });
     </script>
-}
+    }
 
