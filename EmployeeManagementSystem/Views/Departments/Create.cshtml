@@ -1,18 +1,22 @@
 ﻿@model EmployeeManagement.Application.ViewModels.DepartmentViewModel
 
-<form id="createForm">
-    <div class="modal-header">
-        <h5 class="modal-title">Create Department</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<form asp-action="CreateModal" method="post" id="createDepartmentForm">
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
     </div>
-    <div class="modal-body">
-        <div class="form-group">
-            <label asp-for="Name"></label>
-            <input asp-for="Name" class="form-control" />
-            <span asp-validation-for="Name" class="text-danger"></span>
-        </div>
+    <div class="form-group">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
     </div>
-    <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">Create</button>
+    <div class="form-group">
+        <label asp-for="ManagerId"></label>
+        <select asp-for="ManagerId" class="form-control" asp-items="ViewBag.Managers">
+            <option value="">-- Select Manager --</option>
+        </select>
+        <span asp-validation-for="ManagerId" class="text-danger"></span>
     </div>
+    <button type="submit" class="btn btn-primary">Create</button>
 </form>
