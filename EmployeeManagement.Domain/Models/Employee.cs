@@ -15,6 +15,8 @@ namespace EmployeeManagement.Domain.Models
         public decimal Salary { get; set; }
         public string? ImagePath { get; set; }
 
+       
+
         public string? UserId { get; set; }
         public virtual ApplicationUser User { get; set; }
 
@@ -29,7 +31,6 @@ namespace EmployeeManagement.Domain.Models
 
         // Tasks assigned to this employee
         public virtual ICollection<EmployeeTask> EmployeeTasks { get; set; } = new List<EmployeeTask>();
-
 
 
         [NotMapped]
