@@ -13,6 +13,7 @@ namespace EmployeeManagement.Application.Interfaces
         Task<Department> GetDepartmentWithManagerAsync(int id);
         Task<IEnumerable<Department>> GetDepartmentsByBudgetRangeAsync(decimal minBudget, decimal maxBudget);
         Task<bool> DeleteDepartmentAsync(int id);
+        Task<IEnumerable<Department>> GetDepartmentsWithDetailsAsync(string searchString);
 
     }
 }
