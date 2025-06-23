@@ -12,13 +12,10 @@ namespace EmployeeManagement.Application.Services.Interfaces
         Task<IEnumerable<DepartmentViewModel>> GetAllDepartmentsAsync();
         Task<DepartmentViewModel> GetDepartmentByIdAsync(int id);
         Task<DepartmentViewModel> CreateDepartmentAsync(DepartmentViewModel departmentViewModel);
-        Task UpdateDepartmentAsync(DepartmentViewModel departmentViewModel);
+        Task<DepartmentViewModel> UpdateDepartmentAsync(DepartmentViewModel departmentViewModel);
         Task DeleteDepartmentAsync(int id);
-        Task<IEnumerable<DepartmentViewModel>> GetDepartmentsWithEmployeesAsync();
-        //Task<bool> AssignManagerToDepartmentAsync(int departmentId, int managerId);
         Task<bool> CanDeleteDepartmentAsync(int id);
         Task<IEnumerable<DepartmentViewModel>> SearchDepartmentsAsync(string searchTerm);
 
-        Task<IEnumerable<DepartmentViewModel>> GetDepartmentSummaries(string searchString);
     }
 }

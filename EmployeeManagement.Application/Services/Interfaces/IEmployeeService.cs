@@ -14,7 +14,6 @@ namespace EmployeeManagement.Application.Services.Interfaces
         Task<EmployeeViewModel> CreateEmployeeAsync(EmployeeViewModel employee, IFormFile imageFile);
         Task<EmployeeViewModel> UpdateEmployeeAsync(EmployeeViewModel employeeViewModel, IFormFile imageFile);
         Task<bool> DeleteEmployeeAsync(int id);
-        Task<IEnumerable<Employee>> GetEmployeesByDepartmentAsync(int departmentId);
         Task<IEnumerable<EmployeeViewModel>> GetEmployeesByManagerAsync(int managerId);
         Task<IEnumerable<EmployeeViewModel>> SearchEmployeesAsync(string searchTerm);
         Task AssignManagerAsync(int employeeId, int managerId);
