@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EmployeeManagement.Application.ViewModels.DepartmentViewModel>
+﻿@model IEnumerable<DepartmentViewModel>
 
 @{
     ViewData["Title"] = "Departments";
@@ -8,40 +8,56 @@
 
 <p>
     <a href="javascript:;" class="btn btn-primary btn-create">Create New</a>
+
 </p>
 <div id="modal-placeholder"></div>
 
 <div class="card">
     <div class="card-header">
-        <div class="row g-3">
+        <form asp-action="Index" method="get" class="row g-3">
             <div class="col-md-6">
                 <div class="input-group">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search by name..." value="@ViewBag.SearchTerm" />
-                    <button type="button" id="searchBtn" class="btn btn-outline-secondary">Search</button>
+                    <input type="text" name="searchString" class="form-control" placeholder="Search by name..." />
+                    <button type="submit" class="btn btn-outline-secondary">Search</button>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
     <div class="card-body">
         <table class="table table-striped" id="departmentsTable">
             <thead>
                 <tr>
-                    <th>Department Name</th>
-                    <th>Employee Count</th>
-                    <th>Total Salary</th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Name)
+                    </th>
+                    <th>
+                        Employee Count
+                    </th>
+                    <th>
+                        Total Salary
+                    </th>
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="departmentTableBody">
+            <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr data-id="@item.Id">
-                        <td>@Html.DisplayFor(modelItem => item.Name)</td>
-                        <td>@Html.DisplayFor(modelItem => item.EmployeeCount)</td>
-                        <td>@item.TotalSalary.ToString("C")</td>
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EmployeeCount)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TotalSalary)
+                        </td>
                         <td>
                             <a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit" data-id="@item.Id">Edit</a>
                             <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete" data-id="@item.Id">Delete</a>
+
+                            @* <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a> *@
+                            @* <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a> *@
                         </td>
                     </tr>
                 }
@@ -49,7 +65,6 @@
         </table>
     </div>
 </div>
-
 
 
 @section Scripts {
@@ -66,66 +81,46 @@
                 "destroy": true // Allow reinitialization if needed
             });
 
-         // Load Create Department Modal
-        $('body').on('click', '.btn-create', function () {
-            $.get('/Departments/CreateModal', function (html) {
-                $('#modal-placeholder').html(html);
-                // The script inside the modal will show it
+            // Load Create Modal
+            $('body').on('click', '.btn-create', function () {
+                $.get('/Departments/CreateModal', function (html) {
+                    $('#modal-placeholder').html(html);
+                    $('#modal-placeholder .modal').modal('show');
+                });
             });
-        });
 
-        // Submit Create Department Form
-        $('body').on('submit', '#createDepartmentForm', function (e) {
-            e.preventDefault();
-            $.post('/Departments/CreateModal', $(this).serialize(), function (response) {
-                if (response.success) {
-                    $('#createDepartmentModal').modal('hide');
-                    $('.modal-backdrop').remove(); // Remove backdrop if needed
-                    location.reload(); // Or update table via AJAX
-                } else {
-                    // Validation failed, response is HTML partial
-                    $('#modal-placeholder').html(response);
-                    // The script in partial will show the modal again
-                }
+            // Submit Create
+            $('body').on('submit', '#createForm', function (e) {
+                e.preventDefault();
+                $.post('/Departments/CreateModal', $(this).serialize(), function (response) {
+                    if (response.success) {
+                        location.reload(); // Or refresh table content with AJAX
+                    } else {
+                        $('#modal-placeholder').html(response);
+                    }
+                });
             });
-        });
 
-                // Helper to show a modal and clean any old backdrops
-        function showModal(html) {
-            // Remove any previous modal and backdrop
-            $('.modal').modal('hide');
-            $('.modal-backdrop').remove();
-            $('#modal-placeholder').html(html);
-            $('#modal-placeholder .modal').modal('show');
-            // If using .NET client-side validation
-            if (typeof $.validator !== 'undefined') {
-                $.validator.unobtrusive.parse('#editForm');
-            }
-        }
-
-        // Load Edit Modal
-        $('body').on('click', '.btn-edit', function () {
-            const id = $(this).data('id');
-            $.get(`/Departments/EditModal/${id}`, function (html) {
-                showModal(html);
+            // Load Edit Modal
+            $('body').on('click', '.btn-edit', function () {
+                const id = $(this).data('id');
+                $.get(`/Departments/EditModal/${id}`, function (html) {
+                    $('#modal-placeholder').html(html);
+                    $('#modal-placeholder .modal').modal('show');
+                });
             });
-        });
 
-        // Submit Edit
- $('body').on('submit', '#editForm', function (e) {
-    e.preventDefault();
-    $.post('/Departments/EditModal', $(this).serialize(), function (response) {
-        if (response.success) {
-            location.reload();
-        } else {
-            $('#modal-placeholder').html(response);
-            $('#modal-placeholder .modal').modal('show');
-            if (typeof $.validator !== 'undefined') {
-                $.validator.unobtrusive.parse('#editForm');
-            }
-        }
-    });
-
+            // Submit Edit
+            $('body').on('submit', '#editForm', function (e) {
+                e.preventDefault();
+                $.post('/Departments/EditModal', $(this).serialize(), function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        $('#modal-placeholder').html(response);
+                    }
+                });
+            });
 
             // Load Delete Modal
             $('body').on('click', '.btn-delete', function () {
@@ -149,5 +144,4 @@
             });
         });
     </script>
-    }
-
+} 
