@@ -31,7 +31,7 @@ namespace EmployeeManagement.Application.Services.Implementation
             return _mapper.Map<DepartmentViewModel>(department);
         }
 
-        public async Task UpdateDepartmentAsync(DepartmentViewModel departmentViewModel)
+        public async Task<DepartmentViewModel> UpdateDepartmentAsync(DepartmentViewModel departmentViewModel)
         {
             var department = await _unitOfWork.Departments.GetByIdAsync(departmentViewModel.Id);
 
@@ -41,10 +41,11 @@ namespace EmployeeManagement.Application.Services.Implementation
             _mapper.Map(departmentViewModel, department);
 
             _unitOfWork.Departments.Update(department);
-            await _unitOfWork.CompleteAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<DepartmentViewModel>(department);
 
+        }
 
         public async Task<IEnumerable<DepartmentViewModel>> GetAllDepartmentsAsync()
         {
@@ -95,17 +96,13 @@ namespace EmployeeManagement.Application.Services.Implementation
             return departmentViewModel;
         }
 
-        public async Task<IEnumerable<DepartmentViewModel>> GetDepartmentsWithEmployeesAsync()
-        {
-            return await GetAllDepartmentsAsync();
-        }
-
         public async Task<bool> CanDeleteDepartmentAsync(int id)
         {
             var department = await _unitOfWork.Departments
                 .GetFirstOrDefaultAsync(filter: d => d.Id == id, includeProperties: "Employees");
 
-            return department?.Employees?.Count == 0;
+            // Check if there are no employees in the department
+            return department?.Employees?.Count == 0; 
         }
 
         public async Task<IEnumerable<DepartmentViewModel>> SearchDepartmentsAsync(string searchTerm)
@@ -128,6 +125,7 @@ namespace EmployeeManagement.Application.Services.Implementation
 
             return departmentViewModels;
         }
+
         public async Task DeleteDepartmentAsync(int id)
         {
             // Check if department can be deleted (no employees assigned)
@@ -146,21 +144,5 @@ namespace EmployeeManagement.Application.Services.Implementation
             _unitOfWork.Departments.Delete(department);
             await _unitOfWork.SaveChangesAsync();
         }
-
-
-        public async Task<IEnumerable<DepartmentViewModel>> GetDepartmentSummaries(string searchString)
-        {
-            var departmentsTask = await _unitOfWork.Departments.GetDepartmentsWithDetailsAsync(searchString);
-
-            return departmentsTask.Select(d => new DepartmentViewModel
-            {
-                Id = d.Id,
-                Name = d.Name,
-                EmployeeCount = d.Employees.Count(),
-                TotalSalary = d.Employees.Sum(e => (decimal?)e.Salary) ?? 0
-            }).ToList();
-        }
-
-
     }
 }

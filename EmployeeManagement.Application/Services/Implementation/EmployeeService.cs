@@ -32,7 +32,7 @@ namespace EmployeeManagement.Application.Services.Implementation
         public async Task<IEnumerable<EmployeeViewModel>> GetAllEmployeesAsync()
         {
             var employees = await _unitOfWork.Employees
-               .GetAllAsync(includeProperties: "Department");
+               .GetAllAsync(includeProperties: "Department,Manager");
 
 
             // maping Employee to EmployeeViewModel without AutoMapper
@@ -115,7 +115,6 @@ namespace EmployeeManagement.Application.Services.Implementation
             return _mapper.Map<EmployeeViewModel>(employee);
         }
 
-
         public async Task<bool> DeleteEmployeeAsync(int id)
         {
             var employee = await _unitOfWork.Employees
@@ -139,11 +138,6 @@ namespace EmployeeManagement.Application.Services.Implementation
             _unitOfWork.Employees.Delete(employee);
                 await _unitOfWork.SaveChangesAsync();
             return true;
-        }
-
-        public async Task<IEnumerable<Employee>> GetEmployeesByDepartmentAsync(int departmentId)
-        {
-            return await _unitOfWork.Employees.GetEmployeesByDepartmentAsync(departmentId);
         }
 
         public async Task AssignManagerAsync(int employeeId, int managerId)
@@ -251,8 +245,6 @@ namespace EmployeeManagement.Application.Services.Implementation
             // Return relative URL path
             return $"/uploads/{fileName}";
         }
-
-
 
         private void DeleteImage(string imagePath)
         {
