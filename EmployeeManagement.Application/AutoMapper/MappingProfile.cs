@@ -39,6 +39,9 @@ namespace EmployeeManagement.Application.AutoMapper
                 {
                     Console.WriteLine($"Mapping ImagePath: {src.ImagePath} -> {dest.ImagePath}");
                 });
+            // 
+            CreateMap<TaskMB, TaskItem>();
+            CreateMap<TaskItem, TaskMB>();
         }
     }
 
