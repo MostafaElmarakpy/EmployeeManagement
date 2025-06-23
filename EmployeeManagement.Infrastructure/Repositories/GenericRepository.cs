@@ -45,15 +45,10 @@ namespace EmployeeManagement.Infrastructure.Repositories
                 }
             }
 
-
-
-
-
-
             if (filter != null)
                 query = query.Where(filter);
 
-            return await _dbSet.ToListAsync();
+            return await query.ToListAsync();
         }
 
         public async Task<T> GetByIdAsync(int id)
