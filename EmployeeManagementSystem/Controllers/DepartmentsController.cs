@@ -13,39 +13,29 @@ namespace EmployeeManagement.Controllers
     public class DepartmentsController : Controller
     {
         private readonly IDepartmentService _departmentService;
-        private readonly ApplicationDbContext _dbContext;
 
-        public DepartmentsController(IDepartmentService departmentService, ApplicationDbContext dbContext)
+        public DepartmentsController(IDepartmentService departmentService)
         {
             _departmentService = departmentService;
-            _dbContext = dbContext;
         }
 
         // GET: Departments
-        public async Task<IActionResult> Index(string searchTerm = "")
+        public async Task<IActionResult> Index(string searchString)
         {
-            // Fetch all departments with their employees included
+            IEnumerable<DepartmentViewModel> departments;
 
-            var departments = await _departmentService.GetDepartmentSummaries(searchTerm);
-            // If search term is provided, filter the departments
+            //If search term is provided, filter the departments
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                departments = await _departmentService.SearchDepartmentsAsync(searchString);
+            }
+            else
+            {
+                departments = await _departmentService.GetAllDepartmentsAsync();
+            }
 
             return View(departments);
-            
-      
-        }
 
-        [HttpPost]
-        public async Task<IActionResult> Search(string searchTerm)
-        {
-            try
-            {
-                var departments = await _departmentService.SearchDepartmentsAsync(searchTerm);
-                return PartialView("_DepartmentTableRows", departments);
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Search failed. Please try again." });
-            }
         }
 
         // GET: Departments/Create
@@ -76,12 +66,6 @@ namespace EmployeeManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> EditModal(DepartmentViewModel model)
         {
-            //if (ModelState.IsValid)
-            //{
-            //    await _departmentService.UpdateDepartmentAsync(model);
-            //    return Json(new { success = true });
-            //}
-
             if (ModelState.IsValid)
             {
                 try
