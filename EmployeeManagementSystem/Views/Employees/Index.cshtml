@@ -1,4 +1,4 @@
-﻿@model IEnumerable<EmployeeManagement.Application.ViewModels.EmployeeViewModel>
+﻿@model IEnumerable<EmployeeViewModel>
 
 @{
     ViewData["Title"] = "Employees";
@@ -32,6 +32,7 @@
                     <th>Full Name</th>
                     <th>Salary</th>
                     <th>Department</th>
+                    <th>Manager</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -54,6 +55,7 @@
                         <td>@Html.DisplayFor(modelItem => item.FullName)</td>
                         <td>@Html.DisplayFor(modelItem => item.Salary)</td>
                         <td>@item.DepartmentName</td>
+                        <td>@(string.IsNullOrEmpty(item.ManagerName) ? "-" : item.ManagerName)</td>
                         <td>
                             <a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="@item.Id">Edit</a>
                             <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="@item.Id">Delete</a>
