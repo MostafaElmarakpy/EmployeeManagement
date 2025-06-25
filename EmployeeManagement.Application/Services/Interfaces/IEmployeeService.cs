@@ -18,5 +18,6 @@ namespace EmployeeManagement.Application.Services.Interfaces
         Task<IEnumerable<EmployeeViewModel>> SearchEmployeesAsync(string searchTerm);
         Task AssignManagerAsync(int employeeId, int managerId);
         Task<string> SaveEmployeeImageAsync(IFormFile image);
+        Task<EmployeeViewModel> GetManagerEmployeeByUserIdAsync(string userId);
     }
 }

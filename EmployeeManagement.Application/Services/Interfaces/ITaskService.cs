@@ -23,6 +23,7 @@ namespace EmployeeManagement.Application.Services.Interfaces
         Task<bool> UpdateTaskStatusAsync(int taskId, TaskStatus newStatus);
         Task AssignTaskToEmployeeAsync(int taskId, int employeeId);
         Task UnassignTaskFromEmployeeAsync(int taskId, int employeeId);
+        Task<TaskMB> UpdateTaskAssignmentAsync(int taskId, int newEmployeeId);
     }
 }
 
