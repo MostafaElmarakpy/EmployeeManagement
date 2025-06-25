@@ -32,10 +32,60 @@ namespace EmployeeManagement.Controllers
         // GET: Tasks
         public async Task<IActionResult> Index()
         {
-            var isManager =  User.IsInRole("Admin");
+            ViewBag.IsManager = false; // Default value
 
-            ViewBag.IsManager = isManager;
-            return View(new List<TaskMB>());
+            try
+            {
+
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var applicationUser = await _userManager.FindByIdAsync(userId);
+
+                // Find employee associated with current user
+                var employee = await _employeeService.GetEmployeeByUserIdAsync(userId);
+                // var manager = await _employeeService.GetManagerEmployeeByUserIdAsync(userId);
+
+                if (employee == null)
+                {
+                    return View(new List<TaskMB>());
+                }
+
+                // If current user is a manager, get their employees
+                if (User.IsInRole("Manager"))
+                {
+
+                    var managedEmployees = await _employeeService.GetEmployeesByManagerAsync(employee.Id);
+                    ViewBag.Employees = managedEmployees.Select(e => new SelectListItem
+                    {
+                        Value = e.Id.ToString(),
+                        Text = e.FullName
+                    }).ToList();
+
+                    // Get tasks ASSIGNED BY this manager (for managers)
+                    var tasksAssignedByManager = await _taskService.GetTasksByManagerAsync(employee.Id);
+                    ViewBag.IsManager = true;
+                    return View(tasksAssignedByManager);
+                }
+                else if (employee != null)
+                {
+                    // Get tasks assigned TO this employee (for regular employees)
+                    var tasks = await _taskService.GetTasksByEmployeeAsync(employee.Id);
+                    ViewBag.IsManager = false;
+                    return View(tasks);
+                }
+                else
+                {
+                    ViewBag.IsManager = false;
+                    return View(new List<TaskMB>());
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+
+            //ViewBag.IsManager = isManager;
+            //return View(new List<TaskMB>());
             //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             //var applicationUser = await _userManager.FindByIdAsync(userId);
 
@@ -75,7 +125,13 @@ namespace EmployeeManagement.Controllers
         public async Task<IActionResult> Create()
         {
             var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Index");
+            }
             var currentEmployee = await _employeeService.GetEmployeeByUserIdAsync(currentUser.Id);
+
 
             if (currentEmployee == null)
             {
@@ -112,7 +168,18 @@ namespace EmployeeManagement.Controllers
             {
                 try
                 {
+                    // Get current user and employee (manager)
+                    var currentUser = await _userManager.GetUserAsync(User);
+                    var currentEmployee = await _employeeService.GetEmployeeByUserIdAsync(currentUser.Id);
+
+                    // Get assigned employee
+                    var assignedEmployee = await _employeeService.GetEmployeeByIdAsync(model.EmployeeId);
+
+                    // Set manager and employee names for the model
+                    model.CreatedByManagerName = currentEmployee?.FullName;
+                    model.EmployeeName = assignedEmployee?.FullName;
                     var result = await _taskService.CreateTaskAsync(model);
+
                     if (result != null)
                     {
                         TempData["SuccessMessage"] = "Task created successfully.";
@@ -125,20 +192,20 @@ namespace EmployeeManagement.Controllers
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError("", $"Error creating task: {ex.Message}");
+                    return Json(new { success = false, message = "Exception", error = ex.Message });
                 }
             }
 
             // Reload dropdown data if validation fails
-            var currentUser = await _userManager.GetUserAsync(User);
-            var currentEmployee = await _employeeService.GetEmployeeByUserIdAsync(currentUser.Id);
-            var managedEmployees = await _employeeService.GetEmployeesByManagerAsync(currentEmployee.Id);
+            var reloadUser = await _userManager.GetUserAsync(User);
+            var reloadEmployee = await _employeeService.GetEmployeeByUserIdAsync(reloadUser.Id);
+            var managedEmployees = await _employeeService.GetEmployeesByManagerAsync(reloadEmployee.Id);
 
             ViewBag.Employees = new SelectList(managedEmployees, "Id", "FullName", model.EmployeeId);
             ViewBag.Priorities = new SelectList(Enum.GetValues(typeof(TaskPriority)).Cast<TaskPriority>()
                 .Select(p => new { Value = (int)p, Text = p.ToString() }), "Value", "Text", (int)model.Priority);
 
-            return PartialView("Create", new TaskMB());
+            return PartialView("Create", model);
         }
 
         // GET: Tasks/MyTasks
@@ -260,6 +327,101 @@ namespace EmployeeManagement.Controllers
 
             return View(model);
         }
+
+
+        // POST: Tasks/UpdateAssignment/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> UpdateAssignment(int id, TaskMB model)
+        {
+            if (id != model.Id)
+            {
+                return Json(new { success = false, message = "ID mismatch" });
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var manager = await _employeeService.GetManagerEmployeeByUserIdAsync(userId);
+
+            if (manager == null)
+            {
+                return Json(new { success = false, message = "Manager profile not found" });
+            }
+
+            // Verify that the task was created by this manager
+            var task = await _taskService.GetTaskByIdAsync(id);
+
+            //if (task == null || task.CreatedById != manager.Id)
+            //{
+            //    return Json(new { success = false, message = "You can only reassign tasks you created" });
+            //}
+
+            // Verify that the new employee is managed by this manager
+            var managedEmployees = await _employeeService.GetEmployeesByManagerAsync(manager.Id);
+            if (!managedEmployees.Any(e => e.Id == model.EmployeeId))
+            {
+                return Json(new { success = false, message = "You can only assign tasks to employees you manage" });
+            }
+
+            if (ModelState.IsValid)
+            {
+                var updatedTask = await _taskService.UpdateTaskAssignmentAsync(id, model.EmployeeId);
+                if (updatedTask == null)
+                {
+                    return Json(new { success = false, message = "Task not found" });
+                }
+                return Json(new { success = true, message = "Task reassigned successfully", task = updatedTask });
+            }
+
+            // Collect validation errors
+            var errors = ModelState
+                .Where(x => x.Value.Errors.Count > 0)
+                .Select(x => new {
+                    Key = x.Key,
+                    Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList()
+                })
+                .ToList();
+
+            return Json(new
+            {
+                success = false,
+                message = "Invalid model state",
+                validationErrors = errors
+            });
+        }
+
+
+        // GET: Tasks/AssignTaskModal/5
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> AssignTask(int id)
+        {
+            var taskViewModel = await _taskService.GetTaskByIdAsync(id);
+            if (taskViewModel == null)
+            {
+                return NotFound();
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var manager = await _employeeService.GetEmployeeByUserIdAsync(userId);
+
+            if (manager == null)
+            {
+                return NotFound("Manager profile not found");
+            }
+
+            // Verify that the task was created by this manager
+            //if (taskViewModel.CreatedById != manager.Id)
+            //{
+            //    return Forbid("You can only reassign tasks you created");
+            //}
+
+            // Get list of employees managed by this manager
+            var managedEmployees = await _employeeService.GetEmployeesByManagerAsync(manager.Id);
+            ViewBag.Employees = new SelectList(managedEmployees, "Id", "FullName");
+
+            return PartialView("_AssignTask", taskViewModel);
+        }
+    
 
         // POST: Tasks/Delete/5
         [HttpPost]
