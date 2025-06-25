@@ -1,8 +1,11 @@
-﻿@model IEnumerable<EmployeeManagement.Application.ViewModels.TaskMB>
+﻿@model IEnumerable<TaskMB>
 
 
 @{
     var isManager = ViewBag.IsManager;
+    var EmployeeName = ViewBag.AssignedTo;
+    var CreatedByManagerName = ViewBag.CreatedByManagerName;
+
     ViewData["Title"] = isManager ? "Tasks I've Assigned" : "My Tasks";
 }
 
@@ -41,7 +44,7 @@
                     <tr>
                         <th>Title</th>
                         <th>Description</th>
-                        <th>Due Date</th>
+                        <th>Created</th>
                         <th>Status</th>
                         @if (isManager)
                         {
@@ -60,15 +63,17 @@
                         <tr>
                             <td>@item.Title</td>
                             <td>@item.Description</td>
-                            <td>@item.DueDate.ToString("yyyy-MM-dd")</td>
+                            <td>@item.AssignedDate.ToString("yyyy-MM-dd")</td>
                             <td><span class="badge @GetStatusBadgeClass(item.Status)">@item.Status</span></td>
                             @if (isManager)
                             {
                                 <td>@item.EmployeeName</td>
+                                @* <td>EmployeeName</td> *@
                             }
                             else
                             {
-                                @* <td>@item.CreatedByName</td> *@
+                                <td>@item.CreatedByManagerName</td>
+                                @* <td>CreatedByManagerName</td> *@
                             }
                             <td>
                                 @if (isManager)
@@ -101,7 +106,7 @@
             
             // Create Task Button
             $('#btn-create-task').on('click', function() {
-                $.get('/Tasks/CreateModal', function(data) {
+                $.get('/Tasks/Create', function(data) {
                     $('#modal-container').html(data);
                     $('.modal').modal('show');
                     
@@ -113,7 +118,7 @@
             // Edit Task Button (for status updates by employees)
             $(document).on('click', '.edit-task', function() {
                 var taskId = $(this).data('id');
-                $.get('/Tasks/EditModal/' + taskId, function(data) {
+                $.get('/Tasks/Edit/' + taskId, function(data) {
                     $('#modal-container').html(data);
                     $('.modal').modal('show');
                     
@@ -125,7 +130,7 @@
             // Assign Task Button (for managers to reassign)
             $(document).on('click', '.assign-task', function() {
                 var taskId = $(this).data('id');
-                $.get('/Tasks/AssignTaskModal/' + taskId, function(data) {
+                $.get('/Tasks/AssignTask/' + taskId, function(data) {
                     $('#modal-container').html(data);
                     $('.modal').modal('show');
                     
@@ -137,7 +142,7 @@
             // Details Task Button
             $(document).on('click', '.details-task', function() {
                 var taskId = $(this).data('id');
-                $.get('/Tasks/DetailsModal/' + taskId, function(data) {
+                $.get('/Tasks/Details/' + taskId, function(data) {
                     $('#modal-container').html(data);
                     $('.modal').modal('show');
                 });
