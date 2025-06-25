@@ -1,4 +1,5 @@
 ﻿using EmployeeManagement.Application.Interfaces;
+using EmployeeManagement.Application.Services.Implementation;
 using EmployeeManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace EmployeeManagement.Infrastructure.Repositories
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork, IDisposable
     {
         private readonly ApplicationDbContext _dbContext;
         private IDbContextTransaction _transaction;
@@ -21,6 +22,11 @@ namespace EmployeeManagement.Infrastructure.Repositories
             Departments = new DepartmentRepository(_dbContext);
             Employees = new EmployeeRepository(_dbContext);
             Tasks = new TaskRepository(_dbContext);
+            // EmployeeTasks 
+            EmployeeTasks = new EmployeeTaskRepository(_dbContext);
+
+
+
         }
 
         public IEmployeeRepository Employees { get; private set; }
@@ -40,18 +46,38 @@ namespace EmployeeManagement.Infrastructure.Repositories
             return await _dbContext.SaveChangesAsync();
         }
         // Not Now
-        public void BeginTransaction()
+        public async Task BeginTransaction()
         {
-            throw new NotImplementedException();
+            _transaction = await _dbContext.Database.BeginTransactionAsync();
         }
 
-        public Task CommitTransactionAsync()
+        public async Task CommitTransactionAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+                await _transaction.CommitAsync();
+            }
+            finally
+            {
+                await _transaction.DisposeAsync();
+                _transaction = null;
+            }
         }
-        public void RollbackTransaction()
+
+        public async Task RollbackTransaction()
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _transaction.RollbackAsync();
+            }
+            finally
+            {
+                await _transaction.DisposeAsync();
+                _transaction = null;
+            }
         }
+
+
     }
 }

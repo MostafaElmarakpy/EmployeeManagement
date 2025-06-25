@@ -14,6 +14,7 @@ namespace EmployeeManagement.Domain.Models
         public string LastName { get; set; }
         public decimal Salary { get; set; }
         public string? ImagePath { get; set; }
+
         public string? UserId { get; set; }
         public virtual ApplicationUser User { get; set; }
 

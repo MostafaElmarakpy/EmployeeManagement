@@ -17,7 +17,6 @@ namespace EmployeeManagement.Infrastructure.Repositories
         public TaskRepository(ApplicationDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
-
         }
 
         public Task<IEnumerable<TaskItem>> GetOverdueTasksAsync()
