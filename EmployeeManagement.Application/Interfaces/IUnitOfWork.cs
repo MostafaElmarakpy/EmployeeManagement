@@ -13,9 +13,9 @@ namespace EmployeeManagement.Application.Interfaces
         ITaskRepository Tasks { get; }
         IEmployeeTaskRepository EmployeeTasks { get; }
         Task<int> SaveChangesAsync();
-        void BeginTransaction();
+        Task BeginTransaction();
         Task CommitTransactionAsync();
-        void RollbackTransaction();
+        Task RollbackTransaction();
     }
   
 }
