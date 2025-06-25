@@ -40,9 +40,6 @@ namespace EmployeeManagement.Application.ViewModels
         [Display(Name = "Priority")]
         public TaskPriority Priority { get; set; }
 
-        [StringLength(500, ErrorMessage = "Notes cannot exceed 500 characters")]
-        [Display(Name = "Notes")]
-        public string? Notes { get; set; }
 
         [Required(ErrorMessage = "Employee is required")]
         [Display(Name = "Assigned Employee")]
@@ -64,10 +61,7 @@ namespace EmployeeManagement.Application.ViewModels
         [Display(Name = "Department")]
         public string? DepartmentName { get; set; }
 
-        // Computed Properties
-        public bool IsOverdue => DueDate < DateTime.Now && Status != TaskStatus.Completed;
-        public int DaysRemaining => (DueDate - DateTime.Now).Days;
-        public string StatusDisplay => Status.ToString();
+
         public string PriorityDisplay => Priority.ToString();
     }
 

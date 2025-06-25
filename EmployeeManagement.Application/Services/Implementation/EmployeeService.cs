@@ -33,6 +33,7 @@ namespace EmployeeManagement.Application.Services.Implementation
         {
             var employees = await _unitOfWork.Employees
                .GetAllAsync(includeProperties: "Department,Manager");
+            
 
 
             // maping Employee to EmployeeViewModel without AutoMapper
@@ -257,6 +258,18 @@ namespace EmployeeManagement.Application.Services.Implementation
             {
                 File.Delete(fullPath);
             }
+        }
+
+        public async Task<EmployeeViewModel> GetManagerEmployeeByUserIdAsync(string userId)
+        {
+            // Find employee where InsertBy matches the userId
+            var employee = await _unitOfWork.Employees
+                .GetFirstOrDefaultAsync(
+                    //filter: e => e.InsertBy == userId,
+                    includeProperties: "Department,Manager"
+                );
+
+            return _mapper.Map<EmployeeViewModel>(employee);
         }
 
     }

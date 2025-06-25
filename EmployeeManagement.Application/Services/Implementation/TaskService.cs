@@ -41,24 +41,46 @@ namespace EmployeeManagement.Application.Services.Implementation
 
         public async Task<TaskMB> CreateTaskAsync(TaskMB taskViewModel)
         {
-            var task = _mapper.Map<TaskItem>(taskViewModel);
-            task.CreatedAt = DateTime.UtcNow;
+            // Check if employee exists
+            var employee = await _unitOfWork.Employees.GetByIdAsync(taskViewModel.EmployeeId);
+            if (employee == null)
+                throw new ArgumentException($"Employee with ID {taskViewModel.EmployeeId} does not exist.", nameof(taskViewModel.EmployeeId));
 
-            await _unitOfWork.Tasks.AddAsync(task);
-            await _unitOfWork.SaveChangesAsync();
-
-            // Create task assignment
-            var employeeTask = new EmployeeTask
+            _unitOfWork.BeginTransaction();
+            try
             {
-                TaskId = task.Id,
-                EmployeeId = taskViewModel.EmployeeId,
-                AssignedDate = DateTime.UtcNow
-            };
+                var task = _mapper.Map<TaskItem>(taskViewModel);
+                task.Status = Domain.Models.TaskStatus.New;
+                task.CreatedAt = DateTime.UtcNow;
+                task.CreatedByManagerId = taskViewModel.CreatedByManagerId;
+                task.EmployeeId = taskViewModel.EmployeeId;
 
-            await _unitOfWork.EmployeeTasks.AddAsync(employeeTask);
-            await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.Tasks.AddAsync(task);
+                await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<TaskMB>(task);
+                var employeeTask = new EmployeeTask
+                {
+                    TaskId = task.Id,
+                    EmployeeId = taskViewModel.EmployeeId,
+                    AssignedDate = DateTime.UtcNow,
+                    Employee = employee // Ensure navigation property is set if needed
+                };
+
+                await _unitOfWork.EmployeeTasks.AddAsync(employeeTask);
+                await _unitOfWork.SaveChangesAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                // Set the EmployeeName in the returned view model
+                var result = _mapper.Map<TaskMB>(task);
+                result.EmployeeName = employee.FullName;
+                return result;
+            }
+            catch
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
         }
 
         public async Task<bool> UpdateTaskAsync(TaskMB taskViewModel)
@@ -122,10 +144,14 @@ namespace EmployeeManagement.Application.Services.Implementation
 
         public async Task<IEnumerable<TaskMB>> GetTasksByManagerAsync(int managerId)
         {
+            //var tasks = await _unitOfWork.EmployeeTasks.GetAllAsync(
+            //        filter: t => t.CreatedById == managerId,
+            //        includeProperties: "Employee"
+            //    );
             var tasks = await _unitOfWork.Tasks.GetTasksByManagerIdAsync(managerId);
             return _mapper.Map<IEnumerable<TaskMB>>(tasks);
         }
-
+        
         public async Task<IEnumerable<TaskMB>> GetTasksByStatusAsync(Domain.Models.TaskStatus status)
         {
             var tasks = await _unitOfWork.Tasks.GetTasksByStatusAsync(status);
@@ -200,6 +226,32 @@ namespace EmployeeManagement.Application.Services.Implementation
             await _unitOfWork.SaveChangesAsync();
         }
 
+
+        public async Task<TaskMB> UpdateTaskAssignmentAsync(int taskId, int newEmployeeId)
+        {
+            var task = await _unitOfWork.EmployeeTasks
+                .GetFirstOrDefaultAsync(
+                    filter: t => t.TaskId == taskId,
+                    includeProperties: "Employee,CreatedBy"
+                );
+
+            if (task == null)
+                return null;
+
+            task.EmployeeId = newEmployeeId;
+
+            _unitOfWork.EmployeeTasks.Update(task);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Refresh the task with updated employee info
+            task = await _unitOfWork.EmployeeTasks
+                .GetFirstOrDefaultAsync(
+                    filter: t => t.TaskId == taskId,
+                    includeProperties: "Employee,CreatedBy"
+                );
+
+            return _mapper.Map<TaskMB>(task);
+        }
 
     }
 }
