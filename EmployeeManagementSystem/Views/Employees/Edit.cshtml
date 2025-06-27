@@ -1,10 +1,12 @@
-﻿@model EmployeeManagement.Application.ViewModels.EmployeeViewModel
+﻿@model EmployeeViewModel
 
 <div class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form id="editEmployeeForm" enctype="multipart/form-data">
                 <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="ManagerName" />
+
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Employee</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -38,11 +40,6 @@
                         <label for="imageFile" class="form-label">Profile Image</label>
                         <input name="imageFile" type="file" class="form-control" accept=".jpg,.jpeg,.png,.gif" />
                         <div class="form-text">Accepted formats: JPG, PNG, GIF. Max size: 5MB</div>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="Email" class="form-label">Email</label>
-                        <input name="Email" type="email" class="form-control" required />
-                        <span class="text-danger" id="emailError"></span>
                     </div>
                     <div class="col-md-6">
                         <div id="imagePreview" style="display: none;">

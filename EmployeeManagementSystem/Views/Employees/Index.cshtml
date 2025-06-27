@@ -57,8 +57,12 @@
                         <td>@item.DepartmentName</td>
                         <td>@(string.IsNullOrEmpty(item.ManagerName) ? "-" : item.ManagerName)</td>
                         <td>
-                            <a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="@item.Id">Edit</a>
-                            <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="@item.Id">Delete</a>
+                            <a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="@item.Id">
+                                <i class="bi bi-pencil-square"> </i> Edit
+                            </a>
+                            <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="@item.Id">
+                                <i class="bi bi-trash-fill"></i>  Delete
+                            </a>
                         </td>
                     </tr>
                 }
@@ -132,6 +136,7 @@
                                 e.fullName,
                                 e.salary,
                                 e.departmentName,
+                                 e.managerName,
                                 `<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="${e.id}">Edit</a>
                                  <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
                             ]).draw(false);
@@ -147,6 +152,7 @@
             });
 
             // Edit Employee Modal
+
             $('body').on('click', '.btn-edit-employee', function () {
                 const id = $(this).data('id');
                 $.get(`/Employees/EditModal/${id}`, function (html) {
@@ -155,57 +161,47 @@
                 });
             });
 
+            $('body').on('submit', '#editEmployeeForm', function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
 
+                $.ajax({
+                    type: 'POST',
+                    url: '/Employees/EditModal',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        if (response.success) {
+                            $('.modal').modal('hide');
+                            $('.modal-backdrop').remove();
 
-            // Submit Edit Form via AJAX
-        // تحسين معالج Edit Form
-        $('body').on('submit', '#editEmployeeForm', function (e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const employeeId = formData.get('Id'); // get employee ID
+                            const e = response.employee;
+                            const row = $(`.btn-edit-employee[data-id='${e.id}']`).closest('tr');
+                            const image = e.imagePath
+                                ? `<img src="${e.imagePath}" class="employee-image" style="max-width:50px; max-height:50px;" />`
+                                : `<img src="/images/default-user.png" class="employee-image" style="max-width:50px; max-height:50px;" />`;
 
-            $.ajax({
-                type: 'POST',
-                url: '/Employees/EditModal',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    if (response.success) {
-                        // إغلاق Modal
-                        $('#modal-placeholder .modal').modal('hide');
-                        $('.modal-backdrop').remove();
-
-                        const e = response.employee;
-                        // تحديث الصف في الجدول
-                        const row = employeeTable.row($(`tr:has(.btn-edit-employee[data-id='${employeeId}'])`));
-                        if (row) {
-                            row.data([
-                                e.imagePath ? `<img src="${e.imagePath}?${new Date().getTime()}" alt="${e.fullName}" class="employee-image" style="max-width: 50px; max-height: 50px;" />`
-                                          : `<img src="/images/default-user.png" alt="Default" class="employee-image" style="max-width: 50px; max-height: 50px;" />`,
+                            // Update row in DataTable
+                            employeeTable.row(row).data([
+                                image,
                                 e.firstName,
                                 e.lastName,
                                 e.fullName,
                                 e.salary,
                                 e.departmentName,
+                                e.managerName,
                                 `<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="${e.id}">Edit</a>
-                                 <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
+                                <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
                             ]).draw(false);
+                        } else {
+                            $('#modal-placeholder').html(response);
                         }
-                    } else {
-                        // عرض الأخطاء إن وجدت
-                        $('#modal-placeholder').html(response);
-                        $('#modal-placeholder .modal').modal('show');
                     }
-                },
-                error: function (xhr) {
-                    console.error("Edit error:", xhr.responseText);
-                    alert("Error updating employee. Please try again.");
-                }
+                });
             });
-        });
 
-        // تحسين معالج Delete Form
+        // Delete Form
         $('body').on('submit', '#deleteEmployeeForm', function (e) {
             e.preventDefault();
             const employeeId = $('#Id').val();
@@ -217,11 +213,9 @@
                 data: $(this).serialize(),
                 success: function (response) {
                     if (response.success) {
-                        // إغلاق Modal
                         $('#modal-placeholder .modal').modal('hide');
                         $('.modal-backdrop').remove();
 
-                        // حذف الصف من الجدول
                         if (row) {
                             row.remove().draw(false);
                         }
