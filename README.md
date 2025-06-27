@@ -258,84 +258,8 @@ The `EmployeesController` handles all operations related to employee management.
 
 *   **POST /Employees/CreateModal**
     *   **Description**: Creates a new employee.
-    *   **HTTP Method**: `POST`
-    *   **Parameters**:
-        *   `model`: `EmployeeViewModel` object containing employee details, including an optional `ImageFile`.
-            ```json
-            {
-                "FirstName": "Jane",
-                "LastName": "Doe",
-                "Email": "jane.doe@example.com",
-                "PhoneNumber": "123-456-7890",
-                "DateOfBirth": "1990-01-01",
-                "Salary": 60000,
-                "DepartmentId": 1,
-                "ManagerId": null
-            }
             ```
-    *   **Example Request**:
-        ```
-        POST /Employees/CreateModal
-        Content-Type: multipart/form-data
 
-        --boundary
-        Content-Disposition: form-data; name="FirstName"
-
-        Jane
-        --boundary
-        Content-Disposition: form-data; name="LastName"
-
-        Doe
-        --boundary
-        Content-Disposition: form-data; name="Email"
-
-        jane.doe@example.com
-        --boundary
-        Content-Disposition: form-data; name="PhoneNumber"
-
-        123-456-7890
-        --boundary
-        Content-Disposition: form-data; name="DateOfBirth"
-
-        1990-01-01
-        --boundary
-        Content-Disposition: form-data; name="Salary"
-
-        60000
-        --boundary
-        Content-Disposition: form-data; name="DepartmentId"
-
-        1
-        --boundary
-        Content-Disposition: form-data; name="ImageFile"; filename="profile.jpg"
-        Content-Type: image/jpeg
-
-        <binary image data>
-        --boundary--
-        ```
-    *   **Example Response (JSON)**:
-        ```json
-        {
-            "success": true,
-            "employee": {
-                "id": 1,
-                "firstName": "Jane",
-                "lastName": "Doe",
-                "fullName": "Jane Doe",
-                "salary": "60000.00",
-                "imagePath": "/uploads/images/profile.jpg",
-                "departmentName": "Human Resources",
-                "managerName": "-"
-            }
-        }
-        ```
-        *   **Error Response (JSON)**:
-        ```json
-        {
-            "success": false,
-            "message": "Failed to create employee. Please try again."
-        }
-        ```
 
 *   **GET /Employees/EditModal/{id}**
     *   **Description**: Returns a partial view for editing an existing employee.
@@ -351,86 +275,8 @@ The `EmployeesController` handles all operations related to employee management.
 
 *   **POST /Employees/EditModal**
     *   **Description**: Updates an existing employee.
-    *   **HTTP Method**: `POST`
-    *   **Parameters**:
-        *   `model`: `EmployeeViewModel` object containing updated employee details, including an optional `ImageFile`.
-            ```json
-            {
-                "Id": 1,
-                "FirstName": "Jane",
-                "LastName": "Smith",
-                "Email": "jane.smith@example.com",
-                "PhoneNumber": "098-765-4321",
-                "DateOfBirth": "1990-01-01",
-                "Salary": 65000,
-                "DepartmentId": 2,
-                "ManagerId": 5
-            }
-            ```
-    *   **Example Request**:
-        ```
-        POST /Employees/EditModal
-        Content-Type: multipart/form-data
 
-        --boundary
-        Content-Disposition: form-data; name="Id"
-
-        1
-        --boundary
-        Content-Disposition: form-data; name="FirstName"
-
-        Jane
-        --boundary
-        Content-Disposition: form-data; name="LastName"
-
-        Smith
-        --boundary
-        Content-Disposition: form-data; name="Email"
-
-        jane.smith@example.com
-        --boundary
-        Content-Disposition: form-data; name="PhoneNumber"
-
-        098-765-4321
-        --boundary
-        Content-Disposition: form-data; name="DateOfBirth"
-
-        1990-01-01
-        --boundary
-        Content-Disposition: form-data; name="Salary"
-
-        65000
-        --boundary
-        Content-Disposition: form-data; name="DepartmentId"
-
-        2
-        --boundary
-        Content-Disposition: form-data; name="ManagerId"
-
-        5
-        --boundary
-        Content-Disposition: form-data; name="ImageFile"; filename="new_profile.png"
-        Content-Type: image/png
-
-        <binary image data>
-        --boundary--
-        ```
-    *   **Example Response (JSON)**:
-        ```json
-        {
-            "success": true,
-            "employee": {
-                "id": 1,
-                "firstName": "Jane",
-                "lastName": "Smith",
-                "fullName": "Jane Smith",
-                "salary": "65000.00",
-                "imagePath": "/uploads/images/new_profile.png",
-                "departmentName": "Marketing",
-                "managerName": "John Doe"
-            }
-        }
-        ```
+    
 
 *   **GET /Employees/DeleteModal/{id}**
     *   **Description**: Returns a partial view for confirming deletion of an employee.
