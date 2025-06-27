@@ -13,10 +13,12 @@ namespace EmployeeManagement.Domain.Models
         public string Description { get; set; }
         public TaskStatus Status { get; set; }
         public int EmployeeId { get; set; }
-        public int CreatedByManagerId { get; set; }
+        public int? CreatedByManagerId { get; set; }
 
         // Navigation Properties
-        public ICollection<EmployeeTask> EmployeeTasks { get; set; }
+        public virtual Employee AssignedEmployee { get; set; }
+        public virtual Employee CreatedByManager { get; set; }
+        public virtual ICollection<EmployeeTask> EmployeeTasks { get; set; }
 
 
     }

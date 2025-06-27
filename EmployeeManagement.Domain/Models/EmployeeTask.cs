@@ -15,7 +15,12 @@ namespace EmployeeManagement.Domain.Models
         public TaskItem Task { get; set; }
 
         // Navigation Properties
+
         public Employee Employee { get; set; }
+
+        // Creator of the task (manager)
+        //public int? CreatedById { get; set; }
+        //public virtual Employee CreatedBy { get; set; }
 
     }
 }
