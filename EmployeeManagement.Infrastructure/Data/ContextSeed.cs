@@ -177,6 +177,22 @@ namespace EmployeeManagement.Infrastructure.Data
         {
             try
             {
+                // Create admin user if doesn't exist
+                if (await _userManager.FindByNameAsync("admin") == null)
+                {
+                    var adminUser = new ApplicationUser
+                    {
+                        UserName = "admin",
+                        Email = "admin@example.com",
+                        EmailConfirmed = true,
+                        FirstName = "Admin",
+                        LastName = "User"
+                    };
+
+                    var result = await _userManager.CreateAsync(adminUser, "Admin@123");
+                    if (result.Succeeded)
+                        await _userManager.AddToRoleAsync(adminUser, "Admin");
+                }
 
                 // Create manager user if doesn't exist
                 ApplicationUser? managerUser = await _userManager.FindByNameAsync("manager");
@@ -220,11 +236,52 @@ namespace EmployeeManagement.Infrastructure.Data
                     await _context.SaveChangesAsync();
                 }
 
+                // Get manager employee to link employees
+                var managerEmployeeEntity = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == managerUser.Id);
 
+                // Create 3 employee users + employee records
+                for (int i = 1; i <= 3; i++)
+                {
+                    string username = $"employee{i}";
+                    if (await _userManager.FindByNameAsync(username) == null)
+                    {
+                        var employeeUser = new ApplicationUser
+                        {
+                            UserName = username,
+                            Email = $"employee{i}@example.com",
+                            EmailConfirmed = true,
+                            FirstName = $"Employee{i}",
+                            LastName = "User"
+                        };
+
+                        var result = await _userManager.CreateAsync(employeeUser, "Employee@123");
+                        if (result.Succeeded)
+                            await _userManager.AddToRoleAsync(employeeUser, "Employee");
+
+                        // Create Employee entity
+                        var employeeEntity = new Employee
+                        {
+                            FirstName = $"Employee{i}",
+                            LastName = "User",
+                            Salary = 8000 + i * 100, // Example salary
+                            DepartmentId = i, // Example department
+                            ManagerId = managerEmployeeEntity.Id, // Link to manager
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow,
+                            UserId = employeeUser.Id,
+                            // Assuming you want to set InsertBy to the manager's UserId
+                             //InsertBy = managerUser.Id, // Uncomment if you have InsertBy property in Employee
+
+                        };
+                        _context.Employees.Add(employeeEntity);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error seeding data: {ex.Message}", ex);
+                throw ex ?? new Exception("An error occurred while seeding the database.");
             }
         }
 

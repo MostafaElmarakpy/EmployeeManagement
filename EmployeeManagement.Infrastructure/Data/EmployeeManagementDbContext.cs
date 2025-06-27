@@ -21,8 +21,9 @@ namespace EmployeeManagement.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+            
             // Employee-Department relationship (Many-to-One)
             modelBuilder.Entity<Employee>()
                 .HasOne(e => e.Department)
@@ -63,7 +64,21 @@ namespace EmployeeManagement.Infrastructure.Data
                 .WithMany(e => e.EmployeeTasks)
                 .HasForeignKey(te => te.EmployeeId);
 
-            
+
+            // TaskItem-Employee self-referencing relationship
+
+            modelBuilder.Entity<TaskItem>()
+                .HasOne(t => t.AssignedEmployee)
+                .WithMany()
+                .HasForeignKey(t => t.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<TaskItem>()
+                .HasOne(t => t.CreatedByManager)
+                .WithMany()
+                .HasForeignKey(t => t.CreatedByManagerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
 
         }
 

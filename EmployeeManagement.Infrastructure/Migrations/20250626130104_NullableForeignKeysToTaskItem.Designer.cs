@@ -4,6 +4,7 @@ using EmployeeManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250626130104_NullableForeignKeysToTaskItem")]
+    partial class NullableForeignKeysToTaskItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -139,7 +142,7 @@ namespace EmployeeManagement.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[ManagerId] IS NOT NULL");
 
-                    b.ToTable("Departments", (string)null);
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("EmployeeManagement.Domain.Models.Employee", b =>
@@ -193,7 +196,7 @@ namespace EmployeeManagement.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Employees", (string)null);
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("EmployeeManagement.Domain.Models.EmployeeTask", b =>
@@ -211,7 +214,7 @@ namespace EmployeeManagement.Infrastructure.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("EmployeeTasks", (string)null);
+                    b.ToTable("EmployeeTasks");
                 });
 
             modelBuilder.Entity("EmployeeManagement.Domain.Models.TaskItem", b =>
@@ -257,7 +260,7 @@ namespace EmployeeManagement.Infrastructure.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("Tasks", (string)null);
+                    b.ToTable("Tasks");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
