@@ -20,17 +20,17 @@ namespace EmployeeManagement.Application.ViewModels
 
         [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
         [Display(Name = "Description")]
-        public string Description { get; set; }
+        public  string Description { get; set; }
 
         [Required(ErrorMessage = "Start Date is required")]
         [DataType(DataType.Date)]
         [Display(Name = "Start Date")]
-        public DateTime StartDate { get; set; }
+        public DateTime StartDate { get; set; } = DateTime.Now;
 
         [Required(ErrorMessage = "Due Date is required")]
         [DataType(DataType.Date)]
         [Display(Name = "Due Date")]
-        public DateTime DueDate { get; set; }
+        public DateTime DueDate { get; set; } = DateTime.Now.AddDays(7);
 
         [Required(ErrorMessage = "Status is required")]
         [Display(Name = "Status")]
@@ -57,9 +57,6 @@ namespace EmployeeManagement.Application.ViewModels
 
         [Display(Name = "Created By")]
         public string? CreatedByManagerName { get; set; }
-
-        [Display(Name = "Department")]
-        public string? DepartmentName { get; set; }
 
 
         public string PriorityDisplay => Priority.ToString();

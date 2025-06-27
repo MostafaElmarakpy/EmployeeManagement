@@ -46,14 +46,13 @@ namespace EmployeeManagement.Application.Services.Implementation
             if (employee == null)
                 throw new ArgumentException($"Employee with ID {taskViewModel.EmployeeId} does not exist.", nameof(taskViewModel.EmployeeId));
 
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransaction();
             try
             {
                 var task = _mapper.Map<TaskItem>(taskViewModel);
-                task.Status = Domain.Models.TaskStatus.New;
-                task.CreatedAt = DateTime.UtcNow;
+                //task.Status = Domain.Models.TaskStatus.New;
                 task.CreatedByManagerId = taskViewModel.CreatedByManagerId;
-                task.EmployeeId = taskViewModel.EmployeeId;
+                task.EmployeeId = taskViewModel.EmployeeId;//
 
                 await _unitOfWork.Tasks.AddAsync(task);
                 await _unitOfWork.SaveChangesAsync();
@@ -78,7 +77,7 @@ namespace EmployeeManagement.Application.Services.Implementation
             }
             catch
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransaction();
                 throw;
             }
         }
@@ -95,6 +94,10 @@ namespace EmployeeManagement.Application.Services.Implementation
 
                 _mapper.Map(taskViewModel, task);
                 task.UpdateDate = DateTime.UtcNow;
+
+                // Ensure the EmployeeId is not changed
+                task.EmployeeId = taskViewModel.EmployeeId;
+
 
                 _unitOfWork.Tasks.Update(task);
                 await _unitOfWork.SaveChangesAsync();
@@ -127,12 +130,13 @@ namespace EmployeeManagement.Application.Services.Implementation
                 await _unitOfWork.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                
+                Console.WriteLine($"DeleteTaskAsync Error: {ex}");
+                throw; 
             }
         }
-
         public async Task<IEnumerable<TaskMB>> GetTasksByEmployeeAsync(int employeeId)
         {
             var employeeTasks = await _unitOfWork.EmployeeTasks.GetTaskAssignmentsByEmployeeIdAsync(employeeId);
@@ -226,13 +230,13 @@ namespace EmployeeManagement.Application.Services.Implementation
             await _unitOfWork.SaveChangesAsync();
         }
 
-
         public async Task<TaskMB> UpdateTaskAssignmentAsync(int taskId, int newEmployeeId)
         {
             var task = await _unitOfWork.EmployeeTasks
                 .GetFirstOrDefaultAsync(
                     filter: t => t.TaskId == taskId,
-                    includeProperties: "Employee,CreatedBy"
+                    includeProperties: "Employee"
+                    //includeProperties: "Employee,CreatedByManager"
                 );
 
             if (task == null)
@@ -247,7 +251,8 @@ namespace EmployeeManagement.Application.Services.Implementation
             task = await _unitOfWork.EmployeeTasks
                 .GetFirstOrDefaultAsync(
                     filter: t => t.TaskId == taskId,
-                    includeProperties: "Employee,CreatedBy"
+                    includeProperties: "Employee"
+                    //includeProperties: "Employee,CreatedBy"
                 );
 
             return _mapper.Map<TaskMB>(task);

@@ -14,14 +14,13 @@ namespace EmployeeManagement.Application.ViewModels
         [Required(ErrorMessage = "Department Name is required")]
         [StringLength(100, ErrorMessage = "Department Name cannot exceed 100 characters")]
         [Display(Name = "Department Name")]
-        public string Name { get; set; }
+        public  string Name { get; set; }
 
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
-        public string Description { get; set; }
+        public  string Description { get; set; }
 
         [Display(Name = "Manager")]
         public int? ManagerId { get; set; }
-
 
         
         [Display(Name = "Employee Count")]
