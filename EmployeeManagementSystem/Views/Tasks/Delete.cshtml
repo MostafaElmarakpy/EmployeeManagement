@@ -1,10 +1,12 @@
-﻿@model TaskMB
-
+﻿
+@* 
 @{
 	ViewData["Title"] = "Delete Task";
 }
 <h2>Delete Task</h2>
-<form asp-action="Delete" method="post">
+@* <form asp-action="Delete" method="post" id="editTaskForm">
+
+<form method="post" id="elete-task">
 	<input type="hidden" asp-for="Id" />
 	<div class="form-group">
 		<label asp-for="Title"></label>
@@ -28,3 +30,28 @@
 		await Html.RenderPartialAsync("_ValidationScriptsPartial");
 	}
 }
+*@ 
+
+
+@model TaskMB
+<div class="modal fade" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="delete-task" method="post" action="/Tasks/DeleteConfirmed/@Model.Id">
+				@Html.AntiForgeryToken()
+				<input type="hidden" asp-for="Id" />
+				<div class="modal-header">
+					<h5 class="modal-title text-danger">Confirm Delete</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p>Are you sure you want to delete <strong>@Model.Title</strong>?</p>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-danger">Delete</button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

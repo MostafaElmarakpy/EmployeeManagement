@@ -5,7 +5,13 @@
         <div class="modal-content">
             <form id="editTaskForm">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="Id" value="@Model.Id" />
+
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="Title" />
+                <input type="hidden" asp-for="Description" />
+                <input type="hidden" asp-for="DueDate" />
+                <input type="hidden" asp-for="EmployeeId" />
+                <input type="hidden" asp-for="CreatedByManagerName" />
 
                 <div class="modal-header">
                     <h5 class="modal-title">Update Task Status</h5>
@@ -16,25 +22,26 @@
                         <label class="form-label">Title</label>
                         <p class="form-control-plaintext">@Model.Title</p>
                     </div>
-
+                    
                     <div class="mb-3">
                         <label class="form-label">Description</label>
                         <p class="form-control-plaintext">@Model.Description</p>
                     </div>
-
+                    
                     <div class="mb-3">
                         <label class="form-label">Due Date</label>
                         <p class="form-control-plaintext">@Model.DueDate.ToString("yyyy-MM-dd")</p>
                     </div>
-
+                    
                     <div class="mb-3">
                         <label class="form-label">Assigned By</label>
                         <p class="form-control-plaintext">@Model.CreatedByManagerName</p>
                     </div>
-
+                    
                     <div class="mb-3">
-                        <label for="Status" class="form-label">Status</label>
-                        <select name="Status" id="Status" class="form-select" asp-items="ViewBag.StatusOptions"></select>
+                        <label asp-for="Status" class="form-label">Status</label>
+                        <select asp-for="Status" asp-items="ViewBag.StatusOptions" class="form-select"></select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -44,4 +51,6 @@
             </form>
         </div>
     </div>
-</div> 
+</div>
+
+
