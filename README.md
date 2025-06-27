@@ -22,32 +22,6 @@ The Employee Management System is a robust web application designed to streamlin
 *   **Architecture**: Clean Architecture, Repository Pattern, Unit of Work Pattern
 *   **Dependency Injection**: Built-in ASP.NET Core DI
 
-
-## Solution Structure
-EmployeeManagement/
-├── EmployeeManagement.Domain/ # Core business entities and interfaces
-│ ├── Entities/ # Domain models (Employee, Department, TaskItem)
-│ └── Interfaces/ # Repository contracts
-│
-├── EmployeeManagement.Application/ # Business logic and use cases
-│ ├── Services/ # Domain services implementation
-│ ├── Interfaces/ # Service contracts
-│ └── DTOs/ # Data Transfer Objects
-│
-├── EmployeeManagement.Infrastructure/ # Data access and external services
-│ ├── Data/ # DbContext and database configuration
-│ ├── Repositories/ # EF Core repository implementations
-│ └── FileStorage/ # Image handling service
-│
-├── EmployeeManagementSystem/ # Presentation layer (ASP.NET Core MVC)
-│ ├── Controllers/ # MVC Controllers
-│ ├── Views/ # Razor views
-│ ├── ViewModels/ # Presentation models
-│ ├── wwwroot/ # Static assets
-│ └── Services/ # Application services
-│
-└── EmployeeManagement.Tests/ # Unit and integration tests
-
 ## Project Structure
 
 The project is organized into several layers, following the principles of Clean Architecture:
