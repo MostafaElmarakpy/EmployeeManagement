@@ -109,13 +109,23 @@ namespace EmployeeManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> EditModal([FromForm] EmployeeViewModel model)
         {
-          
-                await _employeeService.UpdateEmployeeAsync(model,model.ImageFile); // Fix: Removed assignment to a variable since UpdateEmployeeAsync returns void.
-                if (model.ImageFile != null )
-                {
-                    // Save the image file if it exists
-                    model.ImagePath = await _employeeService.SaveEmployeeImageAsync(model.ImageFile);
-                }
+
+
+            var department = await _departmentService.GetDepartmentByIdAsync(model.DepartmentId);
+            if (department == null) return NotFound();
+
+
+            var updated =  await _employeeService.UpdateEmployeeAsync(model,model.ImageFile); // 
+
+
+            if (model.ImageFile != null )
+            {
+                // Save the image file if it exists
+                model.ImagePath = await _employeeService.SaveEmployeeImageAsync(model.ImageFile);
+            }
+
+                //
+
             return Json(new
                 {
                     success = true,
@@ -127,14 +137,12 @@ namespace EmployeeManagement.Controllers
                         fullName = model.FullName,
                         salary = model.Salary.ToString("0.##"),
                         imagePath = model.ImagePath,
-                        departmentName = model.DepartmentName,
+                        departmentName = department.Name,
                         managerName = string.IsNullOrEmpty(model.ManagerName) ? "-" : model.ManagerName
                     }
                 });
             
 
-            await PopulateViewBag(model.DepartmentId, model.ManagerId);
-            return PartialView("Edit", model);
         }
 
         [HttpGet]

@@ -105,14 +105,15 @@ namespace EmployeeManagement.Controllers
         {
             try
             {
-                var canDelete = await _departmentService.CanDeleteDepartmentAsync(model.Id);
-                if (!canDelete)
+                var hasEmployees = await _departmentService.CanDeleteDepartmentAsync(model.Id);
+                if (hasEmployees)
                 {
-                    return Json(new { success = false, message = "Cannot delete department with assigned employees." });
+                    ModelState.AddModelError("", "Cannot delete department with assigned employees.");
+                    return PartialView("Delete", model);
                 }
 
                 await _departmentService.DeleteDepartmentAsync(model.Id);
-                return Json(new { success = true, id = model.Id });
+                return Json(new { success = true });
             }
             catch (Exception ex)
             {
