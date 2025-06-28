@@ -71,9 +71,13 @@
     </div>
 </div>
 
+<div id="modal-container"></div>
 
 @section Scripts {
     @* <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> *@
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
         $(document).ready(function () {
             // Initialize DataTable only once
@@ -84,9 +88,6 @@
                 "searching": false, 
                 "lengthChange": true,
                 "destroy": true 
-
-
-
             });
 
             // Load Create Modal
@@ -145,6 +146,9 @@
                 $.post('/Departments/DeleteModal', $(this).serialize(), function (response) {
                     if (response.success) {
                         location.reload();
+                        } else if (response.message) {
+                          $('.modal').modal('hide');
+                          alert('Cannot delete department with assigned employees');
                     } else {
                         $('#modal-placeholder').html(response);
                     }
