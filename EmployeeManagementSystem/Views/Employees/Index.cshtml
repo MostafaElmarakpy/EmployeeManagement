@@ -203,49 +203,33 @@
 
 
 
-        // ========= Delete =========
-        $('body').on('click', '.btn-delete-employee', function () {
-            const id = $(this).data('id');
-            $.get(`/Employees/DeleteModal/${id}`, function (html) {
-                $('#modal-placeholder').html(html);
-                $('#modal-placeholder .modal').modal('show');
-            });
-        });
-
-        // Delete Form
-        $('body').on('submit', '#deleteEmployeeForm', function (e) {
-            e.preventDefault();
-            const employeeId = $('#Id').val();
-            const row = employeeTable.row($(`tr:has(.btn-delete-employee[data-id='${employeeId}'])`));
-
-            $.ajax({
-                type: 'POST',
-                url: '/Employees/DeleteModal',
-                data: $(this).serialize(),
-                success: function (response) {
-                    if (response.success) {
-                        $('#modal-placeholder .modal').modal('hide');
-                        $('.modal-backdrop').remove();
-                         showAlert('success', 'Employee Deleted Successfully');
-                            setTimeout(function() {
-                                location.reload();
-                            }, 1500);
-						if (row) {
-                            row.remove().draw(false);
-                        }
-                    } else {
-                        $('#modal-placeholder').html(response);
+                // ========= Delete =========
+                $('body').on('click', '.btn-delete-employee', function () {
+                    const id = $(this).data('id');
+                    $.get(`/Employees/DeleteModal/${id}`, function (html) {
+                        $('#modal-placeholder').html(html);
                         $('#modal-placeholder .modal').modal('show');
-                    }
-                },
-                error: function (xhr) {
-                    console.error("Delete error:", xhr.responseText);
-                    alert("Error deleting employee. Please try again.");
-                }
-            });
-        });
+                    });
+                });
 
-        });
+
+
+             $('body').on('submit', '#deleteEmployeeForm', function (e) {
+                 e.preventDefault();
+                 const row = $(`.btn-delete-employee[data-id='${$('#Id').val()}']`).closest('tr');
+
+                 $.post('/Employees/DeleteModal', $(this).serialize(), function (response) {
+                     if (response.success) {
+                         $('.modal').modal('hide');
+                         $('.modal-backdrop').remove();
+
+                         employeeTable.row(row).remove().draw(false);
+                     } else {
+                         $('#modal-placeholder').html(response);
+                     }
+                 });
+             });
+    });
     </script>
 }
 
