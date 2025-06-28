@@ -58,10 +58,10 @@
                         <td>@(string.IsNullOrEmpty(item.ManagerName) ? "-" : item.ManagerName)</td>
                         <td>
                             <a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="@item.Id">
-                                <i class="bi bi-pencil-square"> </i> Edit
+                                 Edit
                             </a>
                             <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="@item.Id">
-                                <i class="bi bi-trash-fill"></i>  Delete
+                                  Delete
                             </a>
                         </td>
                     </tr>
@@ -192,7 +192,7 @@
                                 e.departmentName,
                                 e.managerName,
                                 `<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="${e.id}">Edit</a>
-                                <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
+                                 <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
                             ]).draw(false);
                         } else {
                             $('#modal-placeholder').html(response);
@@ -201,7 +201,9 @@
                 });
             });
 
-                    // ========= Delete =========
+
+
+        // ========= Delete =========
         $('body').on('click', '.btn-delete-employee', function () {
             const id = $(this).data('id');
             $.get(`/Employees/DeleteModal/${id}`, function (html) {
@@ -209,6 +211,7 @@
                 $('#modal-placeholder .modal').modal('show');
             });
         });
+
         // Delete Form
         $('body').on('submit', '#deleteEmployeeForm', function (e) {
             e.preventDefault();
@@ -223,8 +226,11 @@
                     if (response.success) {
                         $('#modal-placeholder .modal').modal('hide');
                         $('.modal-backdrop').remove();
-
-                        if (row) {
+                         showAlert('success', 'Employee Deleted Successfully');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+						if (row) {
                             row.remove().draw(false);
                         }
                     } else {

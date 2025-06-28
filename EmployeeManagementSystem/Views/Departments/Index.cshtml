@@ -148,7 +148,10 @@
                         location.reload();
                         } else if (response.message) {
                           $('.modal').modal('hide');
-                          alert('Cannot delete department with assigned employees');
+                          showAlert('success', 'Department Deleted Successfully');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
                     } else {
                         $('#modal-placeholder').html(response);
                     }
