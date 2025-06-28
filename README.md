@@ -1,19 +1,33 @@
 # Employee Management System
 
-## Project Overview
 
-The Employee Management System is a robust web application designed to streamline the management of employee data, departments, and tasks within an organization. Built with ASP.NET Core and adhering to Clean Architecture principles, this system provides a clear separation of concerns, making it highly maintainable, scalable, and testable. It offers comprehensive CRUD (Create, Read, Update, Delete) operations for employees, departments, and tasks, ensuring efficient data handling and organizational workflow.
+## 📝 Project Overview
 
-## Key Features
+The **Employee Management System** is a web-based application designed to help organizations efficiently manage employees, departments, and task assignments.  
+Built with **ASP.NET Core** and **Clean Architecture** principles, it ensures maintainability, scalability, and clear separation of concerns.
 
-*   **Employee Management**: Full CRUD operations for employee records, including personal details, contact information, and assigned departments.
-*   **Department Management**: Efficient creation, retrieval, updating, and deletion of department information.
-*   **Task Assignment and Tracking**: Assign tasks to employees, track their progress, and manage task details.
-*   **User Authentication and Authorization**: Secure access control with user login and role-based permissions.
-*   **Clean Architecture**: A well-structured codebase promoting maintainability, testability, and scalability through clear separation of layers.
-*   **Responsive UI**: A user-friendly interface built with ASP.NET Core MVC, ensuring accessibility across various devices.
+### 👤 Who is it for?
 
-## Technical Stack and Dependencies
+HR managers, department heads, and business administrators who need an organized way to handle employee data, department structures, and task tracking in any organization.
+
+
+### ⚠️ Business Constraints
+
+- A department cannot be deleted if employees are assigned to it
+- An employee who manages others cannot be deleted
+- An employee with ongoing tasks cannot be deleted
+- Each task must be assigned to a specific employee
+- Every employee belongs to exactly one department
+
+
+## ✨ Key Features
+
+- Centralized employee and department management
+- Task assignment and tracking
+- Role-based access and permissions
+- Enforced data integrity through business rules
+
+## 🛠️ Technical Stack and Dependencies
 
 *   **Backend**: ASP.NET Core (.NET 9)
 *   **Database**: SQL Server (with Entity Framework Core for ORM)
@@ -22,10 +36,9 @@ The Employee Management System is a robust web application designed to streamlin
 *   **Architecture**: Clean Architecture, Repository Pattern, Unit of Work Pattern
 *   **Dependency Injection**: Built-in ASP.NET Core DI
 
-## Project Structure
 
+## 🗂️ Solution Structure
 The project is organized into several layers, following the principles of Clean Architecture:
-## Solution Structure
 
 ```plaintext
 EmployeeManagement/
@@ -56,7 +69,7 @@ EmployeeManagement/
 ```
 
 
-## Entity Relationship Diagram (ERD) - Conceptual
+## 🗺️ Entity Relationship Diagram (ERD) - Conceptual
 
 ```mermaid
 erDiagram
@@ -140,7 +153,7 @@ erDiagram
 ```
 
 
-## API Endpoints
+## 📡 API Endpoints
 
 
 ### Departments
@@ -259,7 +272,7 @@ flowchart TD
 ---
 
 
-## Installation and Running the Project
+## 🚀 Installation and Running the Project
 
 ### 1. Clone the Repository
 
