@@ -201,6 +201,14 @@
                 });
             });
 
+                    // ========= Delete =========
+        $('body').on('click', '.btn-delete-employee', function () {
+            const id = $(this).data('id');
+            $.get(`/Employees/DeleteModal/${id}`, function (html) {
+                $('#modal-placeholder').html(html);
+                $('#modal-placeholder .modal').modal('show');
+            });
+        });
         // Delete Form
         $('body').on('submit', '#deleteEmployeeForm', function (e) {
             e.preventDefault();
