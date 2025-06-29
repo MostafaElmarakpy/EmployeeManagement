@@ -22,22 +22,22 @@
                         <label class="form-label">Title</label>
                         <p class="form-control-plaintext">@Model.Title</p>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Description</label>
                         <p class="form-control-plaintext">@Model.Description</p>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Due Date</label>
                         <p class="form-control-plaintext">@Model.DueDate.ToString("yyyy-MM-dd")</p>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Assigned By</label>
                         <p class="form-control-plaintext">@Model.CreatedByManagerName</p>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label asp-for="Status" class="form-label">Status</label>
                         <select asp-for="Status" asp-items="ViewBag.StatusOptions" class="form-select"></select>
@@ -52,5 +52,4 @@
         </div>
     </div>
 </div>
-
 
