@@ -9,6 +9,7 @@
 <p>
     <a href="javascript:;" class="btn btn-primary btn-create-employee">Create New</a>
 </p>
+<div id="task-result" class="alert d-none"></div>
 <div id="modal-placeholder"></div>
 
 <div class="card">
@@ -71,7 +72,13 @@
     </div>
 </div>
 
+<!-- Modal Container -->
+<div id="modal-container"></div>
+
 @section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
         $(document).ready(function () {
             // Initialize DataTable with correct column count (7 columns)
@@ -100,6 +107,7 @@
                     .done(function (html) {
                         $('#modal-placeholder').html(html);
                         $('#modal-placeholder .modal').modal('show');
+                     
                     })
                     .fail(function (xhr) {
                         console.error("Failed to load create modal:", xhr.responseText);
@@ -140,9 +148,15 @@
                                 `<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="${e.id}">Edit</a>
                                  <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
                             ]).draw(false);
+
+                                           showAlert('success','Create Employee Successfully');
+                                setTimeout(function() {
+                                            location.reload();
+                                        }, 1000);
                         } else {
                             $('#modal-placeholder').html(response);
                             $('#modal-placeholder .modal').modal('show');
+                                    showAlert('danger',response.message);
                         }
                     },
                     error: function (xhr) {
@@ -158,6 +172,7 @@
                 $.get(`/Employees/EditModal/${id}`, function (html) {
                     $('#modal-placeholder').html(html);
                     $('#modal-placeholder .modal').modal('show');
+
                 });
             });
 
@@ -175,6 +190,7 @@
                         if (response.success) {
                             $('.modal').modal('hide');
                             $('.modal-backdrop').remove();
+                                        showAlert('success','Edit Employee Successfully');
 
                             const e = response.employee;
                             const row = $(`.btn-edit-employee[data-id='${e.id}']`).closest('tr');
@@ -194,8 +210,14 @@
                                 `<a href="javascript:;" class="btn btn-sm btn-outline-primary btn-edit-employee" data-id="${e.id}">Edit</a>
                                  <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
                             ]).draw(false);
+
+                                           showAlert('success',response.message);
+                                    setTimeout(function() {
+                                                location.reload();
+                                            }, 1500);
                         } else {
                             $('#modal-placeholder').html(response);
+                                    showAlert('danger',response.message);
                         }
                     }
                 });
@@ -203,14 +225,14 @@
 
 
 
-                // ========= Delete =========
-                $('body').on('click', '.btn-delete-employee', function () {
-                    const id = $(this).data('id');
-                    $.get(`/Employees/DeleteModal/${id}`, function (html) {
-                        $('#modal-placeholder').html(html);
-                        $('#modal-placeholder .modal').modal('show');
-                    });
+            // ========= Delete =========
+            $('body').on('click', '.btn-delete-employee', function () {
+                const id = $(this).data('id');
+                $.get(`/Employees/DeleteModal/${id}`, function (html) {
+                    $('#modal-placeholder').html(html);
+                    $('#modal-placeholder .modal').modal('show');
                 });
+            });
 
 
 
@@ -222,13 +244,32 @@
                      if (response.success) {
                          $('.modal').modal('hide');
                          $('.modal-backdrop').remove();
-
+                                     showAlert('success','Deleted Employee Successfully');
+                                     setTimeout(function() {
+                                        location.reload();
+                                    }, 1500);
                          employeeTable.row(row).remove().draw(false);
                      } else {
                          $('#modal-placeholder').html(response);
+                                 showAlert('danger',response.message);
                      }
                  });
              });
+
+
+             // Helper function to show alerts
+            function showAlert(type, message) 
+            {
+                const result = $('#task-result');
+                result.removeClass('d-none alert-success alert-danger')
+                        .addClass('alert alert-' + type)
+                        .html(message);
+
+                // Auto-hide after 5 seconds
+                setTimeout(function() {
+                    result.addClass('d-none');
+                }, 5000);
+            }
     });
     </script>
 }
