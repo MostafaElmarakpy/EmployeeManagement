@@ -25,9 +25,7 @@ namespace EmployeeManagement.Application.ViewModels
         [Display(Name = "Full Name")]
         public string FullName => $"{FirstName} {LastName}";
 
-        [Required(ErrorMessage = "Email is required")]
-        [EmailAddress(ErrorMessage = "Invalid email format")]
-        public string Email { get; set; }
+
 
 
         [Required(ErrorMessage = "Salary is required")]
@@ -42,7 +40,7 @@ namespace EmployeeManagement.Application.ViewModels
 
 
         [Display(Name = "Profile Image")]
-        public string? ImagePath { get; set; }
+        public string ImagePath { get; set; }
 
         // For image upload - not mapped to database
         public IFormFile ImageFile { get; set; }
