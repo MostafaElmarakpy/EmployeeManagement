@@ -48,10 +48,7 @@
                         {
                             <th>Assigned To</th>
                         }
-                        else
-                        {
-                            <th>Assigned By</th>
-                        }
+
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -67,13 +64,7 @@
                             {
                                 <td>@item.EmployeeName</td>
                             }
-                            else
-                            {
 
-                                @* <td>@item.CreatedByManagerId</td> *@
-                                <td>@item.CreatedByManagerName</td>
-                                <td>ViewBag.Employees</td>
-                            }
                             <td>
                                 @if (isManager)
                                 {
@@ -199,10 +190,10 @@
                             data: form.serialize(),
                             success: function(response) {
                                 $('.modal').modal('hide');
-                                showAlert('success', 'Task deleted successfully');
                                 setTimeout(function() {
                                     location.reload();
                                 }, 1500);
+                                showAlert('success', 'Task deleted successfully');
                             },
                             error: function(xhr) {
                                 showAlert('danger', "Error deleting task: " + xhr.responseText);
@@ -301,8 +292,8 @@
                         success: function(res) {
                             $('.modal').modal('hide');
                             if (res.success) {
-                                showAlert('success', res.message);
                                 setTimeout(function() { location.reload(); }, 1500);
+                                showAlert('success', res.message);
                             } else {
                                 showAlert('danger', res.message);
                      
