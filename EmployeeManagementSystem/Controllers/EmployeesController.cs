@@ -55,16 +55,13 @@ namespace EmployeeManagement.Controllers
         public async Task<IActionResult> CreateModal([FromForm] EmployeeViewModel model)
         {
 
-
-            if (ModelState.IsValid)
-            {
             var saved = await _employeeService.CreateEmployeeAsync(model, model.ImageFile);
 
-                if (model.ImageFile != null && saved != null)
-                {
-                    // Save the image file if it exists
-                    saved.ImagePath = await _employeeService.SaveEmployeeImageAsync(model.ImageFile);
-                }
+            if (model.ImageFile != null && saved != null)
+            {
+                // Save the image file if it exists
+                saved.ImagePath = await _employeeService.SaveEmployeeImageAsync(model.ImageFile);
+            }
 
                 if (saved != null)
                 {
@@ -88,8 +85,7 @@ namespace EmployeeManagement.Controllers
                 {
                     ModelState.AddModelError("", "Failed to create employee. Please try again.");
                 }
-
-            }
+            
 
             await PopulateViewBag(model.DepartmentId, model.ManagerId);
             return PartialView("Create", model);
@@ -115,7 +111,7 @@ namespace EmployeeManagement.Controllers
             if (department == null) return NotFound();
 
 
-            var updated =  await _employeeService.UpdateEmployeeAsync(model,model.ImageFile); // 
+            var updated =  await _employeeService.UpdateEmployeeAsync(model,model.ImageFile);  
 
 
             if (model.ImageFile != null )
@@ -124,7 +120,7 @@ namespace EmployeeManagement.Controllers
                 model.ImagePath = await _employeeService.SaveEmployeeImageAsync(model.ImageFile);
             }
 
-                //
+            var manager = await _employeeService.GetEmployeeByIdAsync((int)updated.ManagerId);
 
             return Json(new
                 {
@@ -136,9 +132,9 @@ namespace EmployeeManagement.Controllers
                         lastName = model.LastName,
                         fullName = model.FullName,
                         salary = model.Salary.ToString("0.##"),
-                        imagePath = model.ImagePath,
+                        imagePath = updated.ImagePath,
                         departmentName = department.Name,
-                        managerName = string.IsNullOrEmpty(model.ManagerName) ? "-" : model.ManagerName
+                        managerName = string.IsNullOrEmpty(manager.ManagerName) ? "-" : manager.ManagerName
                     }
                 });
             

@@ -173,7 +173,7 @@ namespace EmployeeManagement.Controllers
             var managedEmployees = await _employeeService.GetEmployeesByManagerAsync(reloadEmployee.Id);
 
             ViewBag.Employees = new SelectList(managedEmployees, "Id", "FullName", model.EmployeeId);
-  
+
             return PartialView("Create", model);
         }
 
@@ -280,7 +280,7 @@ namespace EmployeeManagement.Controllers
             {
                 return PartialView("Edit", task);
             }
-            
+
         }
 
         // POST: Tasks/Edit/5
@@ -303,23 +303,23 @@ namespace EmployeeManagement.Controllers
                     if (result)
                     {
                         TempData["SuccessMessage"] = "Task updated successfully.";
-                        return Json(new { success = true, message = "Task deleted successfully." });
+                        return Json(new { success = true, message = "Task updated successfully." });
                     }
                     else
                     {
                         ModelState.AddModelError("", "Failed to update task. Please try again.");
                     }
                 }
-   
+
             }
 
             catch (Exception ex)
             {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
-        
 
-     
+
+
             var errors = ModelState
                 .Where(x => x.Value.Errors.Count > 0)
                 .Select(x => new {
@@ -343,7 +343,7 @@ namespace EmployeeManagement.Controllers
                 }
             });
         }
-        
+
         // POST: Tasks/UpdateAssignment/5
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -479,4 +479,3 @@ namespace EmployeeManagement.Controllers
 
     }
 }
-
