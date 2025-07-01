@@ -1,52 +1,167 @@
 ﻿@model TaskMB
 
 <div class="modal fade" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Task Details</h5>
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-card-checklist me-2"></i>
+                    Task Details
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+
             <div class="modal-body">
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <h4>@Model.Title</h4>
+                <!-- Task Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="mb-0">@Model.Title</h3>
+                    <span class="badge @(Model.Status switch {
+                        EmployeeManagement.Domain.Models.TaskStatus.New => "bg-primary",
+                        EmployeeManagement.Domain.Models.TaskStatus.InProgress => "bg-info",
+                        EmployeeManagement.Domain.Models.TaskStatus.Completed => "bg-success",
+                        EmployeeManagement.Domain.Models.TaskStatus.Delayed => "bg-warning",
+                        EmployeeManagement.Domain.Models.TaskStatus.Cancelled => "bg-secondary",
+                        _ => "bg-secondary"
+                    }) fs-6">
+                        @Model.Status
+                    </span>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <h6 class="text-muted">
+                        <i class="bi bi-text-paragraph me-2"></i>
+                        Description
+                    </h6>
+                    <p class="mb-0 p-3 bg-light rounded">@Model.Description</p>
+                </div>
+
+                <div class="row">
+                    <!-- Task Info -->
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <h6 class="text-muted">
+                                <i class="bi bi-calendar me-2"></i>
+                                Dates
+                            </h6>
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <div class="fw-bold">Created</div>
+                                    <div>@Model.AssignedDate.ToString("yyyy-MM-dd")</div>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="fw-bold">Due Date</div>
+                                    <div class="@(Model.DueDate < DateTime.Now && Model.Status != EmployeeManagement.Domain.Models.TaskStatus.Completed ? "text-danger" : "")">
+                                        @Model.DueDate.ToString("yyyy-MM-dd")
+                                        @if (Model.DueDate < DateTime.Now && Model.Status != EmployeeManagement.Domain.Models.TaskStatus.Completed)
+                                        {
+                                            <span class="badge bg-danger ms-2">Overdue</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assignment Info -->
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <h6 class="text-muted">
+                                <i class="bi bi-people me-2"></i>
+                                Assignment
+                            </h6>
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <div class="fw-bold">Assigned To</div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-2 bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                                            @Model.EmployeeName?[0]
+                                        </div>
+                                        <span>@(Model.EmployeeName ?? "Not assigned")</span>
+                                    </div>
+                                </div>
+                                <div class="list-group-item">
+                                    <div class="fw-bold">Created By</div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-2 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                                            @Model.CreatedByManagerName?[0]
+                                        </div>
+                                        <span>@Model.CreatedByManagerName</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-3 fw-bold">Description:</div>
-                    <div class="col-md-9">@Model.Description</div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-3 fw-bold">Status:</div>
-                    <div class="col-md-9">
-                        <span class="badge @(Model.Status switch {
-                            EmployeeManagement.Domain.Models.TaskStatus.New => "bg-primary",
-                            EmployeeManagement.Domain.Models.TaskStatus.InProgress => "bg-info",
-                            EmployeeManagement.Domain.Models.TaskStatus.Completed => "bg-success",
-                            EmployeeManagement.Domain.Models.TaskStatus.Delayed => "bg-warning",
-                            EmployeeManagement.Domain.Models.TaskStatus.Cancelled => "bg-secondary",
-                            _ => "bg-secondary"
-                        })">@Model.Status</span>
+
+                <!-- Progress -->
+                <div class="mb-4">
+                    <h6 class="text-muted">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Progress
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-3" style="height: 12px;">
+                            @{
+                                var progress = Model.Status switch
+                                {
+                                    EmployeeManagement.Domain.Models.TaskStatus.New => 10,
+                                    EmployeeManagement.Domain.Models.TaskStatus.InProgress => 50,
+                                    EmployeeManagement.Domain.Models.TaskStatus.Completed => 100,
+                                    EmployeeManagement.Domain.Models.TaskStatus.Delayed => 30,
+                                    EmployeeManagement.Domain.Models.TaskStatus.Cancelled => 0,
+                                    _ => 0
+                                };
+                            }
+                            <div class="progress-bar @(Model.Status == EmployeeManagement.Domain.Models.TaskStatus.Completed ? "bg-success" : "bg-primary")"
+                                 role="progressbar" style="width: @progress%;"
+                                 aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                        <div class="fw-bold">@progress%</div>
                     </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-3 fw-bold">Due Date:</div>
-                    <div class="col-md-9">@Model.DueDate.ToString("yyyy-MM-dd")</div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-3 fw-bold">Assigned To:</div>
-                    <div class="col-md-9">@(Model.EmployeeName ?? "Not Assigned")</div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-3 fw-bold">Created By:</div>
-                    <div class="col-md-9">@Model.CreatedByManagerName</div>
                 </div>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x me-1"></i> Close
+                </button>
+
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<style>
+    .avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .list-group-item {
+        border: none;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 10px 15px;
+    }
+
+    .progress {
+        border-radius: 6px;
+        background-color: #e9ecef;
+    }
+
+    .progress-bar {
+        border-radius: 6px;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .modal-footer {
+        border-top: 1px solid rgba(0,0,0,0.1);
+    }
+</style>

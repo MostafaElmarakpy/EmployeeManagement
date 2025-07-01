@@ -150,10 +150,10 @@
                                  <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
                             ]).draw(false);
 
-                                           showAlert('success','Create Employee Successfully');
                                 setTimeout(function() {
                                             location.reload();
                                         }, 1000);
+                                showAlert('success','Create Employee Successfully');
                         } else {
                             $('#modal-placeholder').html(response);
                             $('#modal-placeholder .modal').modal('show');
@@ -212,10 +212,10 @@
                                  <a href="javascript:;" class="btn btn-sm btn-outline-danger btn-delete-employee" data-id="${e.id}">Delete</a>`
                             ]).draw(false);
 
-                                           showAlert('success',response.message);
-                                    setTimeout(function() {
-                                                location.reload();
-                                            }, 1500);
+                            setTimeout(function() {
+                                        location.reload();
+                                    }, 1500);
+                             showAlert('success',response.message);
                         } else {
                             $('#modal-placeholder').html(response);
                                     showAlert('danger',response.message);
@@ -245,10 +245,10 @@
                      if (response.success) {
                          $('.modal').modal('hide');
                          $('.modal-backdrop').remove();
-                                     showAlert('success','Deleted Employee Successfully');
                                      setTimeout(function() {
                                         location.reload();
                                     }, 1500);
+                                     showAlert('success','Deleted Employee Successfully');
                          employeeTable.row(row).remove().draw(false);
                      } else {
                          $('#modal-placeholder').html(response);
